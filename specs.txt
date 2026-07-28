@@ -1,0 +1,18 @@
+1. What this project is:
+A work-in-progress program, which in theory, when finished should allow the user to import, trim, queue and encode video with or without qtgmc deinterlacing under Linux.
+
+Tested with various video clips under Kubuntu 26.04 LTS.
+
+2. Todo:
+Make real readme file, explaining what this project aims to do.
+Figure out license.
+Figure out Markdown
+create dummy C/C++ program which whill check the OS, and for presence of dependencies, if not present it should ask to either download a portable version using wget or show a message prompting the user to use their package manager to install required dependencies.
+Make Makefile
+Add VapourSynth project file generation support
+Add encoder support
+Add trimming support
+Create Project file specification
+Queuing support
+GUI
+Release as version 1.0
