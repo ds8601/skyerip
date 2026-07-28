@@ -16,3 +16,6 @@ Create Project file specification
 Queuing support
 GUI
 Release as version 1.0
+
+
+Specs v 0.1 2026-07-28 17:16 CEST
