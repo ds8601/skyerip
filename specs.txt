@@ -1,7 +1,7 @@
 1. What this project is:
 A work-in-progress program, which in theory, when finished should allow the user to import, trim, queue and encode video with or without qtgmc deinterlacing under Linux.
 
-Tested with various video clips under Kubuntu 26.04 LTS.
+Tested with various video clips under Fedora 44.
 
 2. Todo:
 Make real readme file, explaining what this project aims to do.
@@ -18,4 +18,4 @@ GUI
 Release as version 1.0
 
 
-Specs v 0.1 2026-07-28 17:16 CEST
+Specs v 0.1.1 2026-07-29 19:38 CEST
