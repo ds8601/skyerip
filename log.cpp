@@ -1,5 +1,7 @@
 #include <iostream>
 #include <string.h>
+#include <fstream>
+#include "log.hpp"
 using namespace std;
 fstream log;
 bool open_log(){
@@ -17,4 +19,8 @@ bool open_log(){
 
 void send_to_log(string input){
     log << input;
+}
+
+void close_log(){
+	log.close();
 }

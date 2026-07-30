@@ -1,5 +1,5 @@
 #include <iostream>
-
+#include "log.hpp"
 using namespace std;
 
 bool check_Deps(){
@@ -32,14 +32,15 @@ bool check_Deps(){
 		c--;
 		int dec=1;
 		for(;c>0;c--){
-			cout << python[c+8] << endl;
 			sub = sub + ((int(python[c+8])-'0')*dec);
 			dec = dec * 10;
 		}
-		cout << sub << endl;
 		if(sub>=req_minvernum){
 			p = false;
 		}
+		send_to_log("Detected ");
+		send_to_log(python);
+		send_to_log(" installed, OK\n");
 	}
 	pclose(console);
 	if(p == false){
