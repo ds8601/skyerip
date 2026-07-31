@@ -21,4 +21,4 @@ I haven't found a decent [StaxRip](https://github.com/staxrip/staxrip) replaceme
 - Config file paths
 
 
-## README.MD updated 2025-07-31 16:42 Central Europe Standard Time.
+## README.MD updated 2026-07-31 16:42 Central Europe Standard Time.
