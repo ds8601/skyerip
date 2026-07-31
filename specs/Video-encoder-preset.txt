@@ -1,4 +1,4 @@
-Specification of Video/Audio Encoder preset format for skyerip. Version 0.0.1-draft. 2026-07-30 22:59 PM CEST
+Specification of Video/Audio Encoder preset format for skyerip. Version 0.0.1-draft2.1. 2026-07-31 16:20 CEST
 File extension: .srps
 
 The program should place switches in the user-provided order, shall the user-provided switch not reside in the switch database the program shall display a warning instructing the user to either update the definition or check the preset file for typos.
@@ -6,6 +6,8 @@ The program should place switches in the user-provided order, shall the user-pro
 $INPUT *MUST* be provided by the user to place the input, otherwise it is assumed that the encoder reads from stdin BY DEFAULT WITHOUT ANY ADDITIONAL INPUT
 
 output is always placed at the very end.
+
+WARNING: IN-FILE COMMENTS WILL RESULT IN UNDEFINED BEHAVIOUR.
 
 Contents: (plain text readable *IF* reasonably easy to implement)
 Version number, ended by \n

@@ -7,15 +7,28 @@ Tested with various video clips under Fedora 44.
 Make real readme file, explaining what this project aims to do.
 Figure out license.
 Figure out Markdown
-create dummy C/C++ program which whill check the OS, and for presence of dependencies, if not present it should ask to either download a portable version using wget or show a message prompting the user to use their package manager to install required dependencies.
-Make Makefile
-Add VapourSynth project file generation support
-Add encoder support
-Add trimming support
-Create Project file specification
+Make Makefile ? - Half-done, not a Makefile, but there's a compile script, enough for now.
+Implement actual popen() based encode application launching.
+FIX LOG ROTATION BY ACTUALLY GENERATING LOG FILE NAME USING SYSTEM CLOCK.
+Define how preset file version changes shall be handled.
+Clean up preset file version parser.
+Add muxing support - write spec for preset, implement,
+Add own project file support - write spec, implement. NEEDED FOR QUEUING SUPPORT.
+Add dynamic config file path support. RELEASE BLOCKER, NO PACKAGE IF IT WILL ALWAYS LOOK FOR ./presets/ INSTEAD OF $CONFIG_FILES/presets and $USER_CONFIG_FILES/presets
 Queuing support
+Add VapourSynth project file generation support - RELEASE BLOCKER - NO VS NO QTGMC, NO POINT IN THIS PROJECT.
+
+
+Add encoder support ?
+Add trimming support
+Add in-program preset manipulation / saving functionality. - NEEDED FOR V1.0
+
+
+
 GUI
 Release as version 1.0
+implement log levels
+silence the logging by default
+Release as v 1.1
 
-
-Specs v 0.1.1 2026-07-29 19:38 CEST
+Specs v 0.1.2 2026-07-31 16:18 CEST
