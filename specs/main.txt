@@ -4,14 +4,15 @@ A work-in-progress program, which in theory, when finished should allow the user
 Tested with various video clips under Fedora 44.
 
 2. Todo:
-Make real readme file, explaining what this project aims to do.
+Separate encoder definitions from presets
+
 Figure out license.
-Figure out Markdown
+
 Make Makefile ? - Half-done, not a Makefile, but there's a compile script, enough for now.
 Implement actual popen() based encode application launching.
 FIX LOG ROTATION BY ACTUALLY GENERATING LOG FILE NAME USING SYSTEM CLOCK.
 Define how preset file version changes shall be handled.
-Clean up preset file version parser.
+
 Add muxing support - write spec for preset, implement,
 Add own project file support - write spec, implement. NEEDED FOR QUEUING SUPPORT.
 Add dynamic config file path support. RELEASE BLOCKER, NO PACKAGE IF IT WILL ALWAYS LOOK FOR ./presets/ INSTEAD OF $CONFIG_FILES/presets and $USER_CONFIG_FILES/presets
@@ -31,4 +32,4 @@ implement log levels
 silence the logging by default
 Release as v 1.1
 
-Specs v 0.1.2 2026-07-31 16:18 CEST
+Specs v 0.1.3 2026-08-01 20:49 CEST

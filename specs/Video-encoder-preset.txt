@@ -1,43 +1,37 @@
-Specification of Video/Audio Encoder preset format for skyerip. Version 0.0.1-draft2.2. 2026-08-01 17:44 CEST
+Specification of Video/Audio Encoder preset format for skyerip. Version 0.0.1-draft3. 2026-08-01 20:42 CEST
 File extension: .srps
 
-The program should place switches in the user-provided order, shall the user-provided switch not reside in the switch database the program shall display a warning instructing the user to either update the definition or check the preset file for typos.
+The program should place switches in order defined in DEFINITION (for ease of implementation), shall the user-provided switch not reside in the switch database the program shall display a warning instructing the user to either update the definition or check the preset file for typos.
+$INPUT SPECIFIES WHERE EXACTLY TO PLACE THE INPUT VARIABLE, IF NOT SPECIFIED, IT WILL BE PLACED BEFORE THE REST OF THE SWITCHES
+Output switches are always placed at the very end of the command without anything written in the preset files
+Do NOT place comments before the line after EOF
 
-$INPUT *MUST* be provided by the user to place the input, otherwise it is assumed that the encoder reads from stdin BY DEFAULT WITHOUT ANY ADDITIONAL INPUT
-
-output is always placed at the very end.
-
-WARNING: IN-FILE COMMENTS WILL RESULT IN UNDEFINED BEHAVIOUR.
-
-Contents: (plain text readable *IF* reasonably easy to implement)
+Contents: (plain text readable *IF* reasonably easy to implement):
+"srps" string to specify that the file is a skyerip preset file, this will be checked by the program.
 Version number in format "[major].[minor].[patch][indicator]", ended by \n. [indicator] is one charater reserved for specification version types, a - alpha, r - release.
-path to encoder, ended by \n (For ease of implementation AND readability)
-additional switch required for output (if none then '\n' shall be there)
-definable switches listed in one string separated with commas e.g. "crf=[0-51],refine-mv=[0-3],rc-lookahead=[1-250],keyint=[0-9999]" //TODO: MOVE TO SEPARATE ENCODER DEFINITION FILE, AND SIMPLIFY IT DOWN TO DEF_FILE, VARIABLES.
-Defined switches listed in same fashion as previous field
-$en used as a magic phrase for switches which use other variables
+relative path to encoder definition file.
+List of switches (defined in format: "name,type(same as in encoder definition, if string then multi_var will be used),value (be mindful of denominator in encoder specificaton, if string multi_var will be used to store it instead)")
 EOF
 
 Example (preset based off of preset on https://ffmpeg.party/guides/x265/ ):
+srps
 0.0.1a
-/usr/bin/x265
-
-crf=[0-51],preset=[1-9],no-open-gop=[0-1],keyint=[1-9999],gop-lookahead=[0-9999],rc-lookahead=[1-250],hme=[0-1],hme-search=[$hme1,$hme2,$hme3],strong-intra-smoothing=[0-1],rect=[0-1],aq-mode=[0-4],rd=[0-6],refine-mv=[0-3],rd-refine=[0-1]
-crf=21.5
-preset=7
-no-open-gop=1
-keyint=500
-gop-lookahead=12
-rc-lookahead=100
-hme=1
-hme-search=$en
-hme1=2
-hme2=2
-hme3=3
-strong-intra-smoothing=0
-rect=0
-aq-mode=4
-refine-mv=2
-rd-refine=1
+../encdefs/x265.sred
+crf,1,86
+preset,1,7
+no-open-gop,1,1
+keyint,1,500
+gop-lookahead,1,12
+rc-lookahead,1,100
+hme,0
+hme-search,3
+hme1,1,2
+hme2,1,2
+hme3,1,3
+strong-intra-smoothing,1,0
+rect,1,0
+aq-mode,1,4
+refine-mv,1,2
+rd-refine,1,1
 $INPUT
 EOF

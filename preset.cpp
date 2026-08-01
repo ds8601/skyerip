@@ -9,6 +9,20 @@ using namespace std;
 unsigned int dots[2];
 fstream ps;
 //filename and type, futureproofing, because a muxer will need a separate kind of preset format.
+//FIXME: error codes and gotos/jumps. change parse_preset() type to int for that.
+//FIXME: the vector list should be defined in main.cpp to be sent to the encoder spawner function.
+
+int parse_def(string path, vector<sw> switches, string encpath){
+	fstream p;
+	p.open(path, fstream::in);
+	if(!p.is_open()){
+		send_to_log_v2({"preset.cpp (parse_def): opening ", path, " failed\n"});
+		return 1;
+	}
+	//TODO: COMPLETE PARSER
+	return 0;
+}
+
 bool parse_preset(string fn, int t){
 	send_to_log_v2({"preset.cpp (parse_preset): opening \"", fn, "\" type ", {char(t+'0')}, "\n"});
 	ps.open(fn, fstream::in);
@@ -16,7 +30,12 @@ bool parse_preset(string fn, int t){
 		send_to_log_v2({"preset.cpp (parse_preset): ERROR: PRESET FILE DOESN'T EXIST. RETURNING FALSE\n"});
 		return false;
 	}
-	//parse header. version number
+	string *preset = new string;
+	getline(ps, *preset);
+	if (*preset != "srps"){
+		send_to_log_v2({"preset.cpp (parse_preset): not a recognised preset file format. returning false"});
+	}
+	delete preset;
 	string pres_ver;
 	getline(ps, pres_ver);
 	send_to_log_v2({"preset.cpp (parse_preset): read version as ", pres_ver, "\n"});
@@ -56,5 +75,7 @@ bool parse_preset(string fn, int t){
 	string enc_opt_def;
 	getline(ps, enc_opt_def);
 	//TODO: implement encoder option definition parser. Multidimentional vector needed.
+	vector<sw> switches;
+	//til' string is empty find =, name= string.substr(0,=-1), remove first 4 characters, 
 	return true;
 }
