@@ -1,5 +1,6 @@
 #include <iostream>
 #include <algorithm>
+#include <vector>
 #include <fstream>
 
 #include "log.hpp"
@@ -17,15 +18,11 @@ bool open_log(){
 
     return 0;
 }
-//2026-07-31 15:31 CEST : THIS IS LEGACY CODE, YES, 4 DAYS IN AND I'M ALREADY DEPRECATING THE CRAPPY LOG FUNCTION. NVM. JUST MAKING IT WORSE, SINCE SAFELY DEFINING THE LOG FILE AS EXTERN IS AN IMPOSSIBILITY.
-void send_to_log(string input){
-    logfile << input;
-}
 
-void send_to_log_v2(int argc, char* argv[]){
+void send_to_log_v2(vector<string> inputs){
 	int i=0;
-	while(i<argc){
-		logfile << argv[i];
+	while(i<inputs.size()){
+		logfile << inputs[i];
 		i++;
 	}
 }
