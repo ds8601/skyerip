@@ -2,6 +2,7 @@
 #include <fstream>
 #include "depchk.cpp"
 #include "log.hpp"
+#include "preset.h"
 using namespace std;
 int main(){
 	if(open_log() == 1){
@@ -23,9 +24,8 @@ int main(){
 	cout << "Video Preset: ";
 	string sel_preset_v;
 	cin >> sel_preset_v;
+	parse_preset(sel_preset_v, 0);
 	//TODO: Implement selection manipulation
-	//paranoia
-	send_to_log_v2({"sel_preset_v:",sel_preset_v,"\n"});
 	//TODO: repeat with audio codec preset selection
 	//TODO: Implement actual code using the preset at first with ffmpeg as a viability test. Will be replaced by vapoursynth for v 1.0.
 	//possible improvement for later: same preset format for containers.

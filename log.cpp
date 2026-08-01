@@ -34,10 +34,12 @@ void close_log(){
 
 string uint_to_string(unsigned int input){
 	string output="";
+	if(input == 0) return "0";
+	else{
 	while(input>0){
 		output+=char((input%10)+'0');
 		input = input / 10;
 	}
 	reverse(output.begin(), output.end());
-	return output;
+	return output;}
 }

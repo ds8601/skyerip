@@ -10,7 +10,7 @@ unsigned int dots[2];
 fstream ps;
 //filename and type, futureproofing, because a muxer will need a separate kind of preset format.
 bool parse_preset(string fn, int t){
-	send_to_log_v2({"preset.cpp (parse_preset): opening \"", fn, "\" type", {char(t+'0')}, "\n"});
+	send_to_log_v2({"preset.cpp (parse_preset): opening \"", fn, "\" type ", {char(t+'0')}, "\n"});
 	ps.open(fn, fstream::in);
 	if(!ps.is_open()){
 		send_to_log_v2({"preset.cpp (parse_preset): ERROR: PRESET FILE DOESN'T EXIST. RETURNING FALSE\n"});
@@ -19,7 +19,7 @@ bool parse_preset(string fn, int t){
 	//parse header. version number
 	string pres_ver;
 	getline(ps, pres_ver);
-	send_to_log_v2({"preset.cpp (parse_preset): read version as", pres_ver, "\n"});
+	send_to_log_v2({"preset.cpp (parse_preset): read version as ", pres_ver, "\n"});
 	if(!locate_dots(pres_ver, 2, dots)){
 		send_to_log_v2({"preset.cpp (locate_dots): more than 2 dots, preset file corrupt?\n"});
 		return false;
@@ -27,8 +27,8 @@ bool parse_preset(string fn, int t){
 	//declare new int variables to check if the number is lower (or different. to be decided in version 0.0.1-final of preset file spec.)
 	char pres_ind = pres_ver.back(); //read indicator first despite being checked last, for easier version parsing
 	pres_ver.pop_back(); //delete the indicator. TODO: delete entire string after converting it to uint's.
-	unsigned int pres_maj = uintInSubstr_to_uint(pres_ver.substr(0,dots[0]-1));
-	unsigned int pres_min = uintInSubstr_to_uint(pres_ver.substr(dots[0]+1,dots[1]-1));
+	unsigned int pres_maj = uintInSubstr_to_uint(pres_ver.substr(0,1));
+	unsigned int pres_min = uintInSubstr_to_uint(pres_ver.substr(dots[0]+1, 1));
 	unsigned int pres_patch = uintInSubstr_to_uint(pres_ver.substr(dots[1]+1,pres_ver.size()));
 	send_to_log_v2({"preset.cpp (parse_preset): read major version of preset file as ", uint_to_string(pres_maj), "\n"});
 	send_to_log_v2({"preset.cpp (parse_preset): read minor version of preset file as ", uint_to_string(pres_min), "\n"});
