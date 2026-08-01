@@ -1,4 +1,4 @@
-Specification of Video/Audio Encoder preset format for skyerip. Version 0.0.1-draft2.1. 2026-07-31 16:20 CEST
+Specification of Video/Audio Encoder preset format for skyerip. Version 0.0.1-draft2.2. 2026-08-01 17:44 CEST
 File extension: .srps
 
 The program should place switches in the user-provided order, shall the user-provided switch not reside in the switch database the program shall display a warning instructing the user to either update the definition or check the preset file for typos.
@@ -10,7 +10,7 @@ output is always placed at the very end.
 WARNING: IN-FILE COMMENTS WILL RESULT IN UNDEFINED BEHAVIOUR.
 
 Contents: (plain text readable *IF* reasonably easy to implement)
-Version number, ended by \n
+Version number in format "[major].[minor].[patch][indicator]", ended by \n. [indicator] is one charater reserved for specification version types, a - alpha, r - release.
 path to encoder, ended by \n (For ease of implementation AND readability)
 additional switch required for output (if none then '\n' shall be there)
 definable switches listed in one string separated with commas e.g. "crf=[0-51],refine-mv=[0-3],rc-lookahead=[1-250],keyint=[0-9999]" //TODO: MOVE TO SEPARATE ENCODER DEFINITION FILE, AND SIMPLIFY IT DOWN TO DEF_FILE, VARIABLES.
