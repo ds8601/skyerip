@@ -28,3 +28,6 @@ unsigned int uintInSubstr_to_uint(string substr){
 	}
 	return output;
 }
+int check_definition_version(string *version, int usage, uint *maj, uint *min, uint *pat, char *ind){
+	return 0;
+}

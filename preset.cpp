@@ -11,15 +11,23 @@ fstream ps;
 //filename and type, futureproofing, because a muxer will need a separate kind of preset format.
 //FIXME: error codes and gotos/jumps. change parse_preset() type to int for that.
 //FIXME: the vector list should be defined in main.cpp to be sent to the encoder spawner function.
-
 int parse_def(string path, vector<sw> switches, string encpath){
 	fstream p;
+	send_to_log_v2({"preset.cpp (parse_def): opening ", path, "\n"});
 	p.open(path, fstream::in);
 	if(!p.is_open()){
 		send_to_log_v2({"preset.cpp (parse_def): opening ", path, " failed\n"});
 		return 1;
 	}
+	string *version = new string;
+	getline(p, *version);
+	uint *maj = new uint;
+	uint *min = new uint;
+	uint *pat = new uint;
+	char *ind = new char;
+	int status = check_definition_version(version, 1, maj, min, pat, ind);
 	//TODO: COMPLETE PARSER
+	delete version, maj, min, pat, ind;
 	return 0;
 }
 
