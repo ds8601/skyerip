@@ -10,7 +10,7 @@
 #define CURENCD_MAJ 0
 #define CURENCD_MIN 0
 #define CURENCD_PAT 1
-#define CURENCP_IND 'a'
+#define CURENCD_IND 'a'
 //define struct used by preset.cpp (parse_preset) for maintaining a list of all possible (and used) encoder switches
 struct sw{
 	std::string name;
@@ -26,4 +26,5 @@ struct sw{
 	int den;
 };
 
+extern string vencpath;
 #endif

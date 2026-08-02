@@ -8,7 +8,7 @@ using namespace std;
 unsigned int dots[2];
 fstream ps;
 //filename and type, futureproofing, because a muxer will need a separate kind of preset format.
-int parse_def(string path, vector<sw> *switches){
+int parse_def(string path, vector<sw> *switches, string *input){
 	fstream p;
 	send_to_log_v2({"preset.cpp (parse_def): opening ", path, "\n"});
 	p.open(path, fstream::in);
@@ -34,8 +34,16 @@ int parse_def(string path, vector<sw> *switches){
 		return -1;
 	}
 	send_to_log_v2({"preset.cpp (parse_def): definition file version ", uint_to_string(*maj), {'.'}, uint_to_string(*min), {'.'}, uint_to_string(*pat), {ind}, "\n"});
-	//TODO: COMPLETE PARSER
+	if(*maj != CURENCD_MAJ || *min != CURENCD_MIN || *pat != CURENCD_PAT || *ind != CURENCD_IND){
+		send_to_log_v2({"preset.cpp (parse_def): definition version doesn't match. UNIMPLEMENTED. POSSIBLY CORRUPTED FILE. MESSAGE INTRODUCED 2026-08-02 21:05 CEST\n"});
+		return -2;
+	}
 	delete version, maj, min, pat, ind;
+	getline(p, vencpath);
+	send_to_log_v2({"preset.cpp (parse_def): set vencpath to: \"", vencpath, "\"\n"});
+	getline(p, *input);
+	send_to_log_v2({"preset.cpp (parse_def): set input variable to: \"", *input, "\"\n"});
+	//TODO: COMPLETE PARSER
 	return 0;
 }
 
@@ -68,21 +76,16 @@ int parse_preset(string fn, int t, vector<sw> *switches){
 	}
 	delete pres_ver, maj, min, pat, ind;
 	string *path = new string;
+	string *input = new string;
 	getline(ps, *path);
 	send_to_log_v2({"preset.cpp (parse_preset): got encoder definition path: ", *path, "\n"});
 	int *res = new int;
-	*res = parse_def(*path, switches);
+	*res = parse_def(*path, switches, input);
 	if(*res == -1){
 		send_to_log_v2({"preset.cpp (parse_preset): parse_def() exited with error code corresponding to unrecognised header.\n"});
 		return 1;
 	}
 	delete path, res;
-	string output_sw="";
-	getline(ps, output_sw); //praise the idiot who wrote that spec, no way of verifiying validity.
-	send_to_log_v2({"preset.cpp (parse_preset): got output switch \"", output_sw, "\"\n"});
-	string enc_opt_def;
-	getline(ps, enc_opt_def);
-	//TODO: implement encoder option definition parser. Multidimentional vector needed.
-	//til' string is empty find =, name= string.substr(0,=-1), remove first 4 characters, 
+	//TODO: COMPLETE PARSER
 	return true;
 }

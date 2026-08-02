@@ -6,7 +6,7 @@
 #include "defines.h"
 using namespace std;
 vector<sw> *vsw;
-extern string encpath;
+string vencpath;
 int main(){
 	if(open_log() == 1){
 		return 1;
