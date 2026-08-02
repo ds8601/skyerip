@@ -3,7 +3,10 @@
 #include "depchk.cpp"
 #include "log.hpp"
 #include "preset.h"
+#include "defines.h"
 using namespace std;
+vector<sw> *vsw;
+extern string encpath;
 int main(){
 	if(open_log() == 1){
 		return 1;
@@ -19,12 +22,11 @@ int main(){
 		cout << "Dependency check failed, exiting with error code." << endl;
 		return 1;
 	}
-
 	//TODO: Implement preset auto-listing
 	cout << "Video Preset: ";
 	string sel_preset_v;
 	cin >> sel_preset_v;
-	parse_preset(sel_preset_v, 0);
+	int vppr = parse_preset(sel_preset_v, 0, vsw);
 	//TODO: Implement selection manipulation
 	//TODO: repeat with audio codec preset selection
 	//TODO: Implement actual code using the preset at first with ffmpeg as a viability test. Will be replaced by vapoursynth for v 1.0.

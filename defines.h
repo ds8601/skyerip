@@ -1,13 +1,16 @@
 #ifndef DEFINES_H
 
 #define DEFINES_H
-//idk why but g++ complains unless I make a temporary placeholder for the letter 'a'
-char a = 'a';
-//define current version "0.0.1a"
-#define CURRENT_MAJ 0
-#define CURRENT_MIN 0
-#define CURRENT_PAT 1
-#define CURRENT_IND a
+//define current encoder preset version "0.0.1a"
+#define CURENCP_MAJ 0
+#define CURENCP_MIN 0
+#define CURENCP_PAT 1
+#define CURENCP_IND 'a'
+//define current encoder definition version "0.0.1a"
+#define CURENCD_MAJ 0
+#define CURENCD_MIN 0
+#define CURENCD_PAT 1
+#define CURENCP_IND 'a'
 //define struct used by preset.cpp (parse_preset) for maintaining a list of all possible (and used) encoder switches
 struct sw{
 	std::string name;

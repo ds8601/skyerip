@@ -1,5 +1,6 @@
 #ifndef PRESET_H
 #define PRESET_H
+#include "defines.h"
 using namespace std;
-bool parse_preset(string fn, int t);
+int parse_preset(string fn, int t, vector<sw> *switches);
 #endif

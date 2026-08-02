@@ -1,6 +1,6 @@
 srps
 0.0.1a
-../encdefs/x265.sred
+encdefs/x265.sred
 crf,1,86
 preset,1,7
 no-open-gop,1,1

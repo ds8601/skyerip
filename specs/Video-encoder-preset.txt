@@ -1,4 +1,4 @@
-Specification of Video/Audio Encoder preset format for skyerip. Version 0.0.1-draft3. 2026-08-01 20:42 CEST
+Specification of Video/Audio Encoder preset format for skyerip. Version 0.0.1-draft3.1. 2026-08-02 20:10 CEST
 File extension: .srps
 
 The program should place switches in order defined in DEFINITION (for ease of implementation), shall the user-provided switch not reside in the switch database the program shall display a warning instructing the user to either update the definition or check the preset file for typos.
@@ -9,14 +9,14 @@ Do NOT place comments before the line after EOF
 Contents: (plain text readable *IF* reasonably easy to implement):
 "srps" string to specify that the file is a skyerip preset file, this will be checked by the program.
 Version number in format "[major].[minor].[patch][indicator]", ended by \n. [indicator] is one charater reserved for specification version types, a - alpha, r - release.
-relative path to encoder definition file.
+relative path to encoder definition file. (FIXME: change relative starting point from program launch path to preset file folder)
 List of switches (defined in format: "name,type(same as in encoder definition, if string then multi_var will be used),value (be mindful of denominator in encoder specificaton, if string multi_var will be used to store it instead)")
 EOF
 
 Example (preset based off of preset on https://ffmpeg.party/guides/x265/ ):
 srps
 0.0.1a
-../encdefs/x265.sred
+encdefs/x265.sred
 crf,1,86
 preset,1,7
 no-open-gop,1,1
