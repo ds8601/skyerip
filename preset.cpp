@@ -21,6 +21,7 @@ int parse_def(string path, vector<sw> *switches, string *input, string *output){
 		send_to_log_v2({"preset.cpp (parse_def): ", path, " is NOT a skyerip encoder definition file. returning -1.\n"});
 		return -1;
 	}
+	delete sig;
 	string *version = new string;
 	getline(p, *version);
 	uint *maj = new uint, *min = new uint, *pat = new uint;
