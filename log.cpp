@@ -20,7 +20,7 @@ bool open_log(){
 }
 
 void send_to_log_v2(vector<string> inputs){
-	int i=0;
+	long unsigned int i=0; //shut -Wall -Wextra up.
 	while(i<inputs.size()){
 		logfile << inputs[i];
 		i++;

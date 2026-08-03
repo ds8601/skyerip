@@ -5,7 +5,7 @@ using namespace std;
 
 bool locate_dots(string ver, unsigned int num, unsigned int *dots){
 	unsigned int c=0;
-	for (int i=0; i<ver.length(); i++){
+	for (long unsigned int i=0; i<ver.length(); i++){
 		if(ver[i] == '.'){
 			if(c<num){
 			dots[c]=i;
@@ -41,6 +41,6 @@ int check_definition_version(string version, int usage, uint *maj, uint *min, ui
 	*maj = uintInSubstr_to_uint(version.substr(0,dots[0]));
 	*min = uintInSubstr_to_uint(version.substr(dots[0]+1,dots[1]-dots[0]-1));
 	*pat = uintInSubstr_to_uint(version.substr(dots[1]+1,version.size()-1-dots[1]));
-	delete dots;
+	delete[] dots;
 	return 0;
 }
