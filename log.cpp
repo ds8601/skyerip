@@ -25,6 +25,7 @@ void send_to_log_v2(vector<string> inputs){
 		logfile << inputs[i];
 		i++;
 	}
+	logfile<<std::flush;
 }
 
 
