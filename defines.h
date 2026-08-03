@@ -18,7 +18,7 @@ struct sw{
 	std::string multi_vars;
 	bool set;
 	unsigned int ln = -1;
-	int valid_type;
+	unsigned int valid_type;
 	int valid_min;
 	int valid_max;
 	int valid_den;
@@ -27,4 +27,6 @@ struct sw{
 };
 
 extern string vencpath;
+extern vector<sw> vencsw;
+extern vector<sw> aencsw;
 #endif

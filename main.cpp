@@ -5,7 +5,8 @@
 #include "preset.h"
 #include "defines.h"
 using namespace std;
-vector<sw> *vsw;
+vector<sw> vencsw;
+vector<sw> aencsw;
 string vencpath;
 int main(){
 	if(open_log() == 1){
@@ -26,7 +27,7 @@ int main(){
 	cout << "Video Preset: ";
 	string sel_preset_v;
 	cin >> sel_preset_v;
-	int vppr = parse_preset(sel_preset_v, 0, vsw);
+	int vppr = parse_preset(sel_preset_v, 0);
 	//TODO: Implement selection manipulation
 	//TODO: repeat with audio codec preset selection
 	//TODO: Implement actual code using the preset at first with ffmpeg as a viability test. Will be replaced by vapoursynth for v 1.0.
