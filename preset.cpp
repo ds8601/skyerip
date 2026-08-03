@@ -1,11 +1,11 @@
 #include <iostream>
 #include <fstream>
-#include <filesystem>
 #include "log.hpp"
 #include "defines.h"
 #include "helper.h"
 using namespace std;
 fstream ps;
+//we really need a warning type switch in g++ that will warn against unused library inclusion.
 //filename and type, futureproofing, because a muxer will need a separate kind of preset format.
 int parse_def(string path, vector<sw> *switches, string *input, string *output){
 	fstream p;
@@ -46,13 +46,26 @@ int parse_def(string path, vector<sw> *switches, string *input, string *output){
 	send_to_log_v2({"preset.cpp (parse_def): set input variable to: \"", *input, "\"\n"});
 	getline(p, *output);
 	send_to_log_v2({"preset.cpp (parse_def): set output variable to: \"", *output, "\"\n"});
-	string *swdef = new string;
-	while (*swdef != "EOF"){
-		getline(p, *swdef);
-		send_to_log_v2({"preset.cpp (parse_def): read \"", *swdef, "\" from file to *swdef\n"});
+	string swdef; // the one string that I can't dynamically allocate due to ... *swdef[i] comparison against a char not working.
+	while (swdef != "EOF"){ //begin spaget. FIXME: this shit is definitely unoptimized.
+		getline(p, swdef);
+		send_to_log_v2({"preset.cpp (parse_def): read \"", swdef, "\" from file to *swdef\n"});
+		string *name = new string;
+		//switches->push_back(sw());
+		long unsigned int i=0;
+		while(swdef[i]!=',' && i<swdef.size()){
+			i++;
+		}
+		*name = swdef.substr(0,i-1);
+		send_to_log_v2({"preset.cpp (parse_def): set *name to \"", *name, "\"\n"});
+		swdef = swdef.substr(i+1, swdef.size());
+		i=0; //multi is a bool, first character is the value.
+		bool *multi = new bool;
+		*multi = uintInSubstr_to_uint(swdef.substr(0,1));
+		swdef = swdef.substr(2,swdef.size());
+		while(swdef[i]!=',' && i<swdef.size());
 		//TODO: parse the individual switch deifinitions and do switches.push_back({name,multi,multi_vars,(valid_type),min,max,den)
 	}
-	delete swdef;
 	return 0;
 }
 
