@@ -50,6 +50,7 @@ int parse_def(string path, vector<sw> *switches, string *input, string *output){
 	string swdef; // the one string that I can't dynamically allocate due to ... *swdef[i] comparison against a char not working.
 	while (swdef != "EOF"){ //begin spaget. FIXME: this shit is definitely unoptimized.
 		getline(p, swdef);
+		if(swdef == "EOF") return 0; //workaround stupidity.
 		send_to_log_v2({"preset.cpp (parse_def): read \"", swdef, "\" from file to *swdef\n"});
 		string *name = new string;
 		//switches->push_back(sw());
@@ -57,14 +58,14 @@ int parse_def(string path, vector<sw> *switches, string *input, string *output){
 		while(swdef[i]!=',' && i<swdef.size()){
 			i++;
 		}
-		*name = swdef.substr(0,i-1);
+		*name = swdef.substr(0,i);
 		send_to_log_v2({"preset.cpp (parse_def): set *name to \"", *name, "\"\n"});
-		swdef = swdef.substr(i+1, swdef.size());
-		i=0; //multi is a bool, first character is the value.
+		i++; //multi is a bool, first character is the value.
 		bool *multi = new bool;
-		*multi = uintInSubstr_to_uint(swdef.substr(0,1));
-		swdef = swdef.substr(2,swdef.size());
-		while(swdef[i]!=',' && i<swdef.size());
+		*multi = uintInSubstr_to_uint(swdef.substr(i,1));
+		send_to_log_v2({"preset.cpp (parse_def): set *multi to \"", uint_to_string(*multi), "\"\n"});
+		//if(*multi == true){
+		//while(swdef[i]!=',' && i<swdef.size());
 		//TODO: parse the individual switch deifinitions and do switches.push_back({name,multi,multi_vars,(valid_type),min,max,den)
 	}
 	return 0;
