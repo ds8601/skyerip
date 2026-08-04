@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <vector>
 #include <fstream>
-
+#include <cmath>
 #include "log.hpp"
 using namespace std;
 fstream logfile;
@@ -44,3 +44,18 @@ string uint_to_string(unsigned int input){
 	reverse(output.begin(), output.end());
 	return output;}
 }
+
+string int_to_string(int input){
+	if(input == 0) return "0";
+	else{
+		if(input>0) return uint_to_string(input); //reuse existing code, it'll be fine.
+		else{
+			string out = "-";
+			string result = uint_to_string(abs(input));
+			out+= result;
+			return out;
+		}
+	}
+	return "Unreachable";
+}
+			
