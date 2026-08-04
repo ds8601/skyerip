@@ -158,12 +158,35 @@ int parse_preset(string fn, int t){
 	send_to_log_v2({funcname, "got encoder definition path: ", *path, "\n"});
 	int *res = new int;
 	*res = parse_def(*path, input, output, t);
-	if(*res == -1){
+	if(*res != 0){
 		send_to_log_v2({funcname, "parse_def() exited with error code corresponding to unrecognised header.\n"});
-		return 1;
+		return -4;
 	}
 	delete path;
 	delete res;
+	string sw; //maybe hash maps would've been a better pick, to be researched after I have a working prototype.
+	while(getline(ps, sw)){
+		if(sw == "EOF") break;
+		else if (sw == "$INPUT") send_to_log_v2({funcname, "$INPUT HANDLING UNIMPLEMENTED\n"});
+		else{
+			vector <long unsigned int> commas = locate_char(sw, ',');
+			string name = sw.substr(0,commas[1]);
+			unsigned int type = uintInSubstr_to_uint(sw.substr(commas[1]+1,1));
+			switch (type){
+				case 0:
+					break;
+				case 1:
+					//load value
+					break;
+				case 2:
+					//load value to multi_vars
+					break;
+				case 3:
+					//fuckaroo. might as well start building the command here. but that's for tomorrow.
+					break;
+			}
+		}
+	}
 	//TODO: COMPLETE PARSER
 	return true;
 }
