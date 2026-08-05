@@ -1,0 +1,9 @@
+video encoder definition spec needs updating: missing values to make efficient multivar handling doable.
+video encoder definition spec needs updating: lacks list of supported chroma subsampling values (both input and output)
+video encoder definition spec needs updating: both line number and bool multi are either pointless or undefined, and should be removed.
+video encoder preset spec needs update: where did the denominator go
+video encoder preset spec needs update: input and output chroma subsampling values (assume yuv444p10le for input and yuv420p10le for output)
+encoder preset listing needs implementation
+encoder preset setting needs a variable for location of the presets folder, because the default assumption is assinine.
+encoder preset setting code needs to add the file extension onto the specified filename automatically.
+

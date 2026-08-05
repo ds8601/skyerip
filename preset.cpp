@@ -1,13 +1,21 @@
 #include <iostream>
 #include <fstream>
+#include <unordered_map>
 #include "log.hpp"
 #include "defines.h"
 #include "helper.h"
 using namespace std;
 fstream ps;
+unordered_map<string, int> vswloc;
+unordered_map<string, int> aswloc;
+string vin;
+string vou;
+string ain; //FIXME: multi-track audio is common-place, thus a vector of strings here would do a much better job.
+string aou; //FIXME: again, a string vector here would be better
 //we really need a warning type switch in g++ that will warn against unused library inclusion.
 //filename and type, futureproofing, because a muxer will need a separate kind of preset format.
-int parse_def(string path, string *input, string *output, int t){ //correct according to spec version 0.0.1-draft1 from 2026-08-01, completed 2026-08-03 21:33 CEST - skye
+//TODO: this still could be simplified even further by placing the push_back statements at the very end and branching off at the very beginning of the function, even possibly moving back the type intiger in the spec and removing *multi entirely.
+int parse_def(string path, int t){ //correct according to spec version 0.0.1-draft1 from 2026-08-01, completed 2026-08-03 21:33 CEST - skye
 	string funcname = "preset.cpp (parse_def): ";
 	fstream p;
 	send_to_log_v2({funcname, "opening ", path, "\n"});
@@ -45,10 +53,12 @@ int parse_def(string path, string *input, string *output, int t){ //correct acco
 	//end header.
 	getline(p, vencpath);
 	send_to_log_v2({funcname, "set vencpath to: \"", vencpath, "\"\n"});
-	getline(p, *input);
-	send_to_log_v2({funcname, "set input variable to: \"", *input, "\"\n"});
-	getline(p, *output);
-	send_to_log_v2({funcname, "set output variable to: \"", *output, "\"\n"});
+	if(t==0) getline(p, vin);
+	else getline(p, ain);
+	send_to_log_v2({funcname, "set input variable to: \"", vin, "\"\n"}); //FIXME: AUDIO SUPPORT;
+	if(t==0) getline(p, vou);
+	else getline(p, aou);
+	send_to_log_v2({funcname, "set output variable to: \"", vou, "\"\n"}); //FIXME: AUDIO SUPPORT.
 	string swdef; // the one string that I can't dynamically allocate due to ... *swdef[i] comparison against a char not working.
 	while (getline(p, swdef)){ //begin spaget. FIXME: this shit is definitely unoptimized.
 		if(swdef == "EOF") return 0; //workaround stupidity.
@@ -73,8 +83,14 @@ int parse_def(string path, string *input, string *output, int t){ //correct acco
 				return -3;
 			}
 			else send_to_log_v2({funcname, "type IS MULTIVAR, pushing back what's read to vector and continuing to next line: ", *name, ",", uint_to_string(*multi), ",", *multi_var, ",0,0,", uint_to_string(type), ",-1,-1,-1,-1,-1", "\n"});
-			if(t==0)vencsw.push_back({*name, *multi, *multi_var, 0,0,type,-1,-1,-1,-1,-1});
-			else aencsw.push_back({*name, *multi, *multi_var, 0, 0, type, -1, -1, -1, -1, -1});
+			if(t==0){
+				vencsw.push_back({*name, *multi, *multi_var, 0,0,type,-1,-1,-1,-1,-1});
+				vswloc[*name] = vencsw.size() - 1;
+			}
+			else{
+				aencsw.push_back({*name, *multi, *multi_var, 0, 0, type, -1, -1, -1, -1, -1});
+				aswloc[*name] = aencsw.size() - 1;
+			}
 			delete name;
 			delete multi;
 			delete multi_var;
@@ -88,8 +104,14 @@ int parse_def(string path, string *input, string *output, int t){ //correct acco
 		}
 		else if(type == 2){
 			send_to_log_v2({funcname, "type is STRING, pushing back what's read to vector and continuing to next line: ", *name, ",", uint_to_string(*multi), ",", *multi_var, ",0,0,", uint_to_string(type), ",-1,-1,-1,-1,-1", "\n"});
-			if(t==0)vencsw.push_back({*name, *multi, *multi_var,0,0,type, -1, -1, -1, -1, -1});
-			else aencsw.push_back({*name, *multi, *multi_var, 0, 0, type, -1, -1, -1, -1 ,-1});
+			if(t==0){
+				vencsw.push_back({*name, *multi, *multi_var,0,0,type, -1, -1, -1, -1, -1});
+				vswloc[*name] = vencsw.size() - 1;
+			}
+			else{
+				aencsw.push_back({*name, *multi, *multi_var, 0, 0, type, -1, -1, -1, -1 ,-1});
+				aswloc[*name] = aencsw.size() - 1;
+			}
 			delete name;
 			delete multi;
 			delete multi_var;
@@ -104,8 +126,14 @@ int parse_def(string path, string *input, string *output, int t){ //correct acco
 		int *den = new int;
 		*den = intInSubstr_to_int(swdef.substr(commas[5]+1,(swdef.size()-commas[5])));
 		send_to_log_v2({funcname, "set *den to ", int_to_string(*den), ". Type is NOTHING or INT/BOOL/FLOATINGPOINT, no more variables (according to spec) to populate from this line of the definition, pushing back what's read to vector and continuing to next line: ", *name, ",", uint_to_string(*multi), ",", *multi_var, ",0,0,", uint_to_string(type), ",", int_to_string(*min), ",", int_to_string(*max), ",", int_to_string(*den), ",-1,-1\n"});
-		if(t==0)vencsw.push_back({*name, *multi, *multi_var, 0, 0, type, *min, *max, *den, -1, -1});
-		else aencsw.push_back({*name, *multi, *multi_var, 0, 0, type, *min, *max, *den, -1, -1});
+		if(t==0){
+			vencsw.push_back({*name, *multi, *multi_var, 0, 0, type, *min, *max, *den, -1, -1});
+			vswloc[*name] = vencsw.size() - 1;
+		}
+		else{
+			aencsw.push_back({*name, *multi, *multi_var, 0, 0, type, *min, *max, *den, -1, -1});
+			aswloc[*name] = aencsw.size() - 1;
+		}
 		//this is done to shut up -Wall -Wextra
 		delete name;
 		delete multi;
@@ -115,6 +143,8 @@ int parse_def(string path, string *input, string *output, int t){ //correct acco
 		delete den;
 		}
 	}
+	send_to_log_v2({funcname, "EXITING SUCCESFULLY.\n"});
+	p.close();
 	return 0;
 }
 
@@ -135,7 +165,7 @@ int parse_preset(string fn, int t){
 	delete preset;
 	string* pres_ver = new string;
 	unsigned int *maj = new unsigned int, *min = new unsigned int, *pat = new unsigned int;
-	char *ind = new char;
+	char *ind = new char; //valgrind is complaining that this is 0 bytes after getting 1 byte assigned to it. TF?
 	getline(ps, *pres_ver);
 	int vcheck = check_definition_version(*pres_ver, 1, maj, min, pat, ind);
 	if(vcheck == -1){
@@ -153,11 +183,11 @@ int parse_preset(string fn, int t){
 	delete min;
 	delete pat;
 	delete ind;
-	string *path = new string, *input = new string, *output = new string;
+	string *path = new string;
 	getline(ps, *path);
 	send_to_log_v2({funcname, "got encoder definition path: ", *path, "\n"});
 	int *res = new int;
-	*res = parse_def(*path, input, output, t);
+	*res = parse_def(*path, t);
 	if(*res != 0){
 		send_to_log_v2({funcname, "parse_def() exited with error code corresponding to unrecognised header.\n"});
 		return -4;
@@ -166,27 +196,53 @@ int parse_preset(string fn, int t){
 	delete res;
 	string sw; //maybe hash maps would've been a better pick, to be researched after I have a working prototype.
 	while(getline(ps, sw)){
-		if(sw == "EOF") break;
-		else if (sw == "$INPUT") send_to_log_v2({funcname, "$INPUT HANDLING UNIMPLEMENTED\n"});
+		if(sw == "EOF"){
+			send_to_log_v2({funcname, "saw EOF, ending fun with reading this\n"});
+			break;
+		}
+		else if (sw[0] == '$'){
+			send_to_log_v2({funcname, "$INPUT HANDLING UNIMPLEMENTED\n"});
+			continue;
+		}
 		else{
 			vector <long unsigned int> commas = locate_char(sw, ',');
-			string name = sw.substr(0,commas[1]);
-			unsigned int type = uintInSubstr_to_uint(sw.substr(commas[1]+1,1));
+			string name = sw.substr(0,commas[0]);
+			unsigned int type = uintInSubstr_to_uint(sw.substr(commas[0]+1,1));
 			switch (type){
-				case 0:
+				case 0: {//shut clang++ up
+					send_to_log_v2({funcname, "enabling ", name, "\n"});
+					vencsw[vswloc[name]].set = true;
 					break;
+					}
 				case 1:
-					//load value
+					{
+					int value = intInSubstr_to_int(sw.substr(commas[1]+1,sw.size()-commas[1]));
+					send_to_log_v2({funcname, "detected value as \"", int_to_string(value), "\", setting that in vector.\n"});
+					vencsw[vswloc[name]].set = true;
+					vencsw[vswloc[name]].val = value;
 					break;
-				case 2:
-					//load value to multi_vars
+					}
+				case 2: {
+					string value = sw.substr(commas[1]+1, sw.size()-commas[1]);
+					send_to_log_v2({funcname, "detected value as \"", value, "\", setting that in vector as multi_var.\n"});
+					vencsw[vswloc[name]].set = true;
+					vencsw[vswloc[name]].multi_vars = value;
 					break;
-				case 3:
-					//fuckaroo. might as well start building the command here. but that's for tomorrow.
+					}
+				case 3: {
+					//fuckaroo. this will need a special handler to push back populating it til the very end, then and only then gathering the values for it into the multi_var string while unsetting the used variables. that's really the only way. OR it should have a special option to signify it's a multivar variable and thus should be placed in the multivar portion of the appropriate - .... or there needs to be a "belongs to" field in the struct, possibly replacing the unused line number one.
+					send_to_log_v2({funcname, "MULTIVAR handling remains to be implemented\n"});
 					break;
+					}
 			}
+			continue;
 		}
 	}
-	//TODO: COMPLETE PARSER
-	return true;
-}
+	//random cleanup shit introduced while debugging another of the skye-special index off by one every-fucking-where errors.
+	sw="";
+	vswloc.clear();
+	aswloc.clear();
+	send_to_log_v2({funcname, "successfully got to end of function without any funny biz \n"});
+	ps.close();
+	return 0;
+} //valgrind notes an invalid read of size 1 being here. tf?

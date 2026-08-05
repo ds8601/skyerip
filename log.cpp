@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <vector>
 #include <fstream>
-#include <cmath>
 #include "log.hpp"
 using namespace std;
 fstream logfile;
@@ -51,7 +50,7 @@ string int_to_string(int input){
 		if(input>0) return uint_to_string(input); //reuse existing code, it'll be fine.
 		else{
 			string out = "-";
-			string result = uint_to_string(abs(input));
+			string result = uint_to_string((input * -1)); //get rid of abs, where it's pointless.
 			out+= result;
 			return out;
 		}

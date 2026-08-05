@@ -17,7 +17,7 @@ struct sw{
 	bool multi;
 	std::string multi_vars;
 	bool set;
-	unsigned int ln = -1;
+	unsigned int ln = -1; //UNUSED
 	unsigned int valid_type;
 	int valid_min;
 	int valid_max;

@@ -8,6 +8,7 @@ using namespace std;
 vector<sw> vencsw;
 vector<sw> aencsw;
 string vencpath;
+string fn = "main.cpp ";
 int main(){
 	if(open_log() == 1){
 		return 1;
@@ -28,6 +29,21 @@ int main(){
 	string sel_preset_v;
 	cin >> sel_preset_v;
 	int vppr = parse_preset(sel_preset_v, 0);
+	if(vppr != 0){send_to_log_v2({fn, "something went seriously wrong while parsing.\n"});
+		return -1;}
+	else send_to_log_v2({fn, "parser exited gracefully \n"});
+	string vidcommand = "ffmpeg -hide_banner -loglevel error -i ";
+	vidcommand+= filename;
+	vidcommand+= " -pix_fmt yuv444p10le -strict -1 -f yuv4mpegpipe - |";
+	vidcommand+= vencpath;
+	vidcommand+= " ";
+	for(int i=0; i<vencsw.size(); i++){
+		if(vencsw[i].set == true){
+			//TODO: FINISH PROTOTYPE
+		}
+	}
+	//TODO: MOVE TO HELPER FUNCTION
+	cout << "proposed fopen command:" << vidcommand << endl;
 	//TODO: Implement selection manipulation
 	//TODO: repeat with audio codec preset selection
 	//TODO: Implement actual code using the preset at first with ffmpeg as a viability test. Will be replaced by vapoursynth for v 1.0.
