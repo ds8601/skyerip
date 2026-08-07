@@ -34,12 +34,51 @@ int main(){
 	else send_to_log_v2({fn, "parser exited gracefully \n"});
 	string vidcommand = "ffmpeg -hide_banner -loglevel error -i ";
 	vidcommand+= filename;
-	vidcommand+= " -pix_fmt yuv444p10le -strict -1 -f yuv4mpegpipe - |";
+	vidcommand+= " -pix_fmt yuv444p10le -strict -1 -f yuv4mpegpipe - | ";
 	vidcommand+= vencpath;
 	vidcommand+= " ";
-	for(int i=0; i<vencsw.size(); i++){
+	for(unsigned long int i=0; i<vencsw.size(); i++){
 		if(vencsw[i].set == true){
-			//TODO: FINISH PROTOTYPE
+			switch (vencsw[i].valid_type){
+				case 0: {
+						vidcommand+= "--" + vencsw[i].name;
+						break;
+					}
+				case 1: {
+						// int devided by anotyher int. fuck.
+						vidcommand+= "--" + vencsw[i].name + "=";
+						//FIXME: This needs to be moved to a helper function for code readability.
+						int val = vencsw[i].val;
+						int den = vencsw[i].valid_den; //FIXME: Either remove vencsw[i].den OR ASK every time for denominator ONLY IF TYPE==double.
+						int temp = val%den;
+						vidcommand+= int_to_string(val/den);
+						val = temp;
+						if(val>0){
+							vidcommand+=".";
+							while(val != 0){
+								val = val * 10;
+								temp = val%den;
+								vidcommand+= int_to_string(val/den);
+								val = temp;
+							}
+						}
+						break;
+					}
+				case 2: {
+						vidcommand+= "--" + vencsw[i].name + "=" + vencsw[i].multi_vars;
+						send_to_log_v2({fn, "(main): WARN: switch ", vencsw[i].name, " is type 2 (string), WON'T BE VERIFIED FOR VALIDITY, EXPECT ERRORS OR WARNINGS ON FRESH PRESETS\n"});
+						break;
+					}
+				case 3:{
+					       send_to_log_v2({fn, "(main): MULTIVAR REMAINS YET TO BE IMPLEMENTED\n"});
+					       break;
+				       }
+				default:{
+					send_to_log_v2({fn, "(main): vencsw[i].set is true, but type isn't set to any recognized type. Not sure what to do with this shit, ignoring. \n"});
+					break;
+					}
+			}
+			vidcommand+=" ";
 		}
 	}
 	//TODO: MOVE TO HELPER FUNCTION

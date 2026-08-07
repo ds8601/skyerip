@@ -1,7 +1,7 @@
 #!/bin/sh
 if command -v clang++ > /dev/null
 then #clang usually gives smaller binary files. time executed remains to be tested
-	clang++ main.cpp log.cpp preset.cpp helper.cpp -O2 -march=native -Wall -Wextra -fno-common -o a.out
+	clang++ main.cpp log.cpp preset.cpp helper.cpp -Os -march=native -Wall -Wextra -fno-common -fno-unroll-loops -o a.out
 else
 	g++ main.cpp log.cpp preset.cpp helper.cpp -O2 -march=native -Wall -Wextra -fno-common -o a.out
 fi
