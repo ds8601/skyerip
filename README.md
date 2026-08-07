@@ -10,15 +10,15 @@ I haven't found a decent [StaxRip](https://github.com/staxrip/staxrip) replaceme
 - Log file (lousy implementation, ngl)
 - Checking installed python3 for meeting minimum version requirements of [VapourSynth](https://www.vapoursynth.com/)
 - The sorriest excuse of a makefile replacement
+- Almost complete parser for custom encoder preset and definition formats.
+- A bunch of notes on how everything should be implemented in the near future.
 
 ### Functions NOT implemented so far:
-- Anything actually useful
-- Encoding anything
+- Encoding anything (YET, so close yet so far)
 - A GUI or at least a CLI that doesn't suck
-- Any code safety practices
 - Directory listing
-- Log file rotation (yes, really, it won't do another log until you delete logfile.log. HAVE FUN)
+- Log file rotation (yes, really, it won't do another log until you delete logfile.log. HAVE FUN. 2026-08-07 update: still no work on that front)
 - Config file paths
 
 
-## README.MD updated 2026-07-31 16:42 Central Europe Standard Time.
+## README.MD updated 2026-08-07 22:57 Central Europe Standard Time.
