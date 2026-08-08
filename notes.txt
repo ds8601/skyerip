@@ -1,12 +1,11 @@
-video encoder definition spec needs updating: missing values to make efficient multivar handling doable.
-video encoder definition spec needs updating: lacks list of supported chroma subsampling values (both input and output)
-video encoder definition spec needs updating: both line number and bool multi are either pointless or undefined, and should be removed.
 video encoder preset spec needs update: where did the denominator go
-video encoder preset spec needs update: input and output chroma subsampling values (assume yuv444p10le for input and yuv420p10le for output)
-video encoder definition sepc needs update: there needs to be a bool value to state if an int value IS INCLUDED AS PART OF MULTIVAR.
 encoder preset listing needs implementation
 encoder preset setting needs a variable for location of the presets folder, because the default assumption is assinine.
 encoder preset setting code needs to add the file extension onto the specified filename automatically.
-video encoder * spec needs update: rename valid_type to "type", TF DOES valid_type EVEN MEAN, IT'S EITHER A TYPE OR NOT.
+ENCODER DEFINITION CODE NEEDS UPDATE NEXT THING TOMORROW, IMPLEMENT CHANGES IN DRAFT 2, BY SWITCHING OVER TO sw_v2, ALSO STOP THE SILLY UNNECCESARY VARIABLE DEFINING BULLSHIT AND USE GOTOS.
 
 audio encoder preset and handling spec TBD.
+VS-based rewrite TBD
+HEADER MINIMIZATION TBD.
+HDR10 / HDR10+ handling TBD
+

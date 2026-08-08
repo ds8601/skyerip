@@ -25,7 +25,23 @@ struct sw{
 	int val;
 	int den;
 };
+//define struct for general switches, updated 2026-08-08 21:30 CEST
+struct sw_v2{
+	bool set;
+	bool in_mvar;
+	std::string name;
+	int type;
+	std::string mvar;
+	std::string excl;
+	int min;
+	int max;
+	int val;
+	int den;
+};
 
+#define PREFIX "."
+#define PRESET_DIR "presets"
+#define ENCDEF_DIR "encdefs"
 extern string vencpath;
 extern vector<sw> vencsw;
 extern vector<sw> aencsw;

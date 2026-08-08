@@ -1,21 +1,43 @@
-Specificatoin of Video/Audio Encoder definition format for skyerip. Version 0.0.1-draft1. 2026-08-01 20:42 CEST
+Specificatoin of Video/Audio Encoder definition format for skyerip. Version 0.0.1-draft2. 2026-08-08 22:01 CEST
 File extension: .sred
 
 
 
-$INPUT *MUST* be provided by the user to place the input, otherwise it is assumed that the encoder reads from stdin BY DEFAULT WITHOUT ANY ADDITIONAL INPUT
+Deprecated bullshit: $INPUT *MUST* be provided by the user to place the input, otherwise it is assumed that the encoder reads from stdin BY DEFAULT WITHOUT ANY ADDITIONAL INPUT
 
 output is always placed at the very end.
 
 WARNING: IN-FILE COMMENTS WILL RESULT IN UNDEFINED BEHAVIOUR. unless placed on a new line after EOF.
-
 Contents:
 "sred" string to specify that the file is a skyerip encoder definition file, this will be checked by the program.
 Version number in format "[major].[minor].[patch][indicator]", ended by \n. [indicator] is one charater reserved for specification version types, a - alpha, r - release.
 path to encoder, ended by \n (For ease of implementation AND readability)
 additional switches required for input to be read from STDIN
 additional switch required for output (if none then '\n' shall be there)
-list of switches in format (read struct sw in defines.h, one switch per line, types: 0 - NOTHING, 1 - int/double (int = den=1, double calculated into a string when starting encode), 2 - string (WARNING: WON'T BE CHECKED FURTHER),3 - multivar (also won't be checked, but will be filled out using template instead of being presumed user-specified static) ): "name,multi,mult_vars,type,min,max,den"
+list of supported input chroma values
+list of switches in format (read struct sw_v2 in defines.h, one switch per line:
+TYPES:
+-1 - NOTHING EXCLUDED BY SOMETHING
+0 - NOTHING (NOTHING ELSE ADDED)
+1 - INT
+2 - STRING (NOT CHECKED FOR VALIDITY)
+3 - MULTIVAR (SPECIAL TYPE OF STRING WHICH CONTAINS A TEMPLATE WITH VALUES WITH WHICH IT WILL BE FILLED OUT)
+4 - FLOATING POINT (DONE BY CONVERSION FROM INT VAL AND INT DEN INTO STRING TO AVOID FLOAT AND LONG FLOAT WEIRDNESS)
+FIELDS:
+in_mvar - bool, usually false, unless used in filling out MULTIVAR, added for ease of implementation.
+name - name of switch, not friendly name
+type
+IF type is NOTHING EXCLUDED BY SOMETHING: {
+excl - name of variable that can't be set IF THIS ONE IS}
+IF type is NOTHING: {}
+IF type is string: {}
+IF type is MULTIVAR:{
+mvar - in quotation marks, preset for MULTIVAR, variables defined by {var_name}, EXAMPLE: "{hme1},{hme2},{hme3}" }
+IF type is INT or FLOATING POINT:{
+min - minimum whole value
+max - maximum whole value
+(DENOMINATOR WILL BE SPECIFIED BY USER IN PRESET FILE, HOWEVER IT SHOULDN'T BE DEFINED IN THE DEFINITION FILE BECAUSE OF POSSIBLE CONFUSION)}
+)
 EOF
 
 Example:
@@ -24,20 +46,21 @@ sred
 /usr/bin/x265
 -i -
 
-crf,0,,1,0,204,4
-preset,0,,1,0,9,1
-no-open-gop,0,,1,0,1,1
-keyint,0,,1,1,9999,1
-gop-lookahead,0,,1,1,240,1
-rc-lookahead,0,,1,0,250,1
-hme,0,,1,0,1,1
-hme-search,1,"$hme1,$hme2,$hme3",3,,,
-hme1,0,,1,0,7,1
-hme2,0,,1,0,7,1
-hme3,0,,1,0,7,1
-strong-intra-smoothing,0,,1,0,1,1
-rect,0,,1,0,1,1
-aq-mode,0,,1,0,4,1
-refine-mv,0,,1,0,3,1
-rd-refine,0,,1,0,1,1
+yuv400p,yuv420p,yuv420p10le,yuv422p10le,yuv444p10le
+0,crf,4,0,51
+0,preset,1,1,9
+0,no-open-gop,-1,open-gop
+0,keyint,1,1,9999
+0,gop-lookahead,1,1,240
+0,rc-lookahead,1,1,250
+0,hme,0
+0,hme-search,3,"{hme1},{hme2},{hme3}"
+1,hme1,1,0,7
+1,hme2,1,0,7
+1,hme3,1,0,7
+0,strong-intra-smoothing,-1,no-strong-intra-smoothing
+0,rect,-1,no-rect
+0,aq-mode,1,0,4
+0,refine-mv,1,0,3
+0,rd-refine,-1,no-rd-refine
 EOF
