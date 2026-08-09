@@ -5,8 +5,8 @@
 #include "preset.h"
 #include "defines.h"
 using namespace std;
-vector<sw> vencsw;
-vector<sw> aencsw;
+vector<sw_v2> vencsw;
+vector<sw_v2> aencsw;
 string vencpath;
 string fn = "main.cpp ";
 int main(){
@@ -37,9 +37,11 @@ int main(){
 	vidcommand+= " -pix_fmt yuv444p10le -strict -1 -f yuv4mpegpipe - | ";
 	vidcommand+= vencpath;
 	vidcommand+= " ";
+	//ALL OF THIS NEEDS TO BE REWRITTEN
+	/*
 	for(unsigned long int i=0; i<vencsw.size(); i++){
 		if(vencsw[i].set == true){
-			switch (vencsw[i].valid_type){
+			switch (vencsw[i].type){
 				case 0: {
 						vidcommand+= "--" + vencsw[i].name;
 						break;
@@ -81,6 +83,7 @@ int main(){
 			vidcommand+=" ";
 		}
 	}
+	*/
 	//TODO: MOVE TO HELPER FUNCTION
 	cout << "proposed fopen command:" << vidcommand << endl;
 	//TODO: Implement selection manipulation

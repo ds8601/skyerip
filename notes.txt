@@ -1,8 +1,10 @@
-video encoder preset spec needs update: where did the denominator go
 encoder preset listing needs implementation
 encoder preset setting needs a variable for location of the presets folder, because the default assumption is assinine.
 encoder preset setting code needs to add the file extension onto the specified filename automatically.
+EXAMPLE VIDEO ENCODER DEFINITION FILE NEEDS UPDATING - FILL OUT ALL THE VARIABLES, NOT JUST THE ONES USED BY MY PRESET.
 ENCODER DEFINITION CODE NEEDS UPDATE NEXT THING TOMORROW, IMPLEMENT CHANGES IN DRAFT 2, BY SWITCHING OVER TO sw_v2, ALSO STOP THE SILLY UNNECCESARY VARIABLE DEFINING BULLSHIT AND USE GOTOS.
+ENCODER PRESET CODE NEEDS UPDATE. CURRENTLY IT'S BROKEN.
+
 
 audio encoder preset and handling spec TBD.
 VS-based rewrite TBD

@@ -1,3 +1,5 @@
+//preset.cpp, PRE-PROTOTYPE CODE
+// (c) 2026, Skye Wierzchowska (ds8601), license to be decided.
 #include <iostream>
 #include <fstream>
 #include <unordered_map>
@@ -10,12 +12,13 @@ unordered_map<string, int> vswloc;
 unordered_map<string, int> aswloc;
 string vin;
 string vou;
+vector<string> supchr;
 string ain; //FIXME: multi-track audio is common-place, thus a vector of strings here would do a much better job.
 string aou; //FIXME: again, a string vector here would be better
 //we really need a warning type switch in g++ that will warn against unused library inclusion.
 //filename and type, futureproofing, because a muxer will need a separate kind of preset format.
 //TODO: this still could be simplified even further by placing the push_back statements at the very end and branching off at the very beginning of the function, even possibly moving back the type intiger in the spec and removing *multi entirely.
-int parse_def(string path, int t){ //correct according to spec version 0.0.1-draft1 from 2026-08-01, completed 2026-08-03 21:33 CEST - skye
+int parse_def(string path, int t){ //NOTE: THIS CODE IS IN THE PROCESS OF BEING MODERNIZED FOR struct sw_v2, start 2028-08-09 21:51, end 2026-08-09 23:31 CEST
 	string funcname = "preset.cpp (parse_def): ";
 	fstream p;
 	send_to_log_v2({funcname, "opening ", path, "\n"});
@@ -50,7 +53,6 @@ int parse_def(string path, int t){ //correct according to spec version 0.0.1-dra
 	delete min;
 	delete pat;
 	delete ind;
-	//end header.
 	getline(p, vencpath);
 	send_to_log_v2({funcname, "set vencpath to: \"", vencpath, "\"\n"});
 	if(t==0) getline(p, vin);
@@ -59,90 +61,84 @@ int parse_def(string path, int t){ //correct according to spec version 0.0.1-dra
 	if(t==0) getline(p, vou);
 	else getline(p, aou);
 	send_to_log_v2({funcname, "set output variable to: \"", vou, "\"\n"}); //FIXME: AUDIO SUPPORT.
+	//end header
+	string chroma;
+	getline(p, chroma);
+	send_to_log_v2({funcname, "got supported chroma string \"", chroma, "\"\n"});
+	vector<long unsigned int> chroma_commas = locate_char(chroma, ',');
+	if(chroma_commas.size()==0){
+		send_to_log_v2({funcname, "NO commas, means only ONE SUPPORTED INPUT CHROMA, pushing back \"", chroma, "\"\n"});
+		supchr.push_back(chroma);
+	}
+	else{
+		send_to_log_v2({funcname, "pushing back supchr[0] \"", chroma.substr(0,chroma_commas[0]), "\"\n"});
+		supchr.push_back(chroma.substr(0,chroma_commas[0]));
+		for(int i=1; i<chroma_commas.size(); i++){
+			send_to_log_v2({funcname, "pushing back supchr[", int_to_string(i), "] \"", chroma.substr(chroma_commas[i-1]+1,chroma_commas[i]-chroma_commas[i-1]-1), "\"\n"});
+			supchr.push_back(chroma.substr(chroma_commas[i-1]+1,chroma_commas[i]-chroma_commas[i-1]-1));
+		}
+		send_to_log_v2({funcname, "pushing back last supchr \"", chroma.substr(chroma_commas.back()+1,chroma.size()-chroma_commas.back()), "\"\n"});
+		supchr.push_back(chroma.substr(chroma_commas.back()+1,chroma.size()-chroma_commas.back()));
+	}
 	string swdef; // the one string that I can't dynamically allocate due to ... *swdef[i] comparison against a char not working.
 	while (getline(p, swdef)){ //begin spaget. FIXME: this shit is definitely unoptimized.
 		if(swdef == "EOF") return 0; //workaround stupidity.
 		send_to_log_v2({funcname, "read \"", swdef, "\" from file to *swdef\n"});
-		string *name = new string;
+		sw_v2 cur;
 		vector<long unsigned int> commas = locate_char(swdef, ',');
-		*name = swdef.substr(0,commas[0]);
-		send_to_log_v2({funcname, "set *name to \"", *name, "\"\n"});
-		bool *multi = new bool;
-		*multi = uintInSubstr_to_uint(swdef.substr(commas[0]+1,1));
-		send_to_log_v2({funcname, "set *multi to \"", uint_to_string(*multi), "\"\n"});
-		string *multi_var = new string;
-		*multi_var = ""; //just in case I forget NOT to check this IF type !=3 || type !=2
-		if(*multi == true){
-			vector <long unsigned int> qm = locate_char(swdef, '"');
-			*multi_var = swdef.substr(qm[0]+1,(qm[1]-qm[0]-1));
-			send_to_log_v2({funcname, "set *multi_var to \"", *multi_var, "\"\n"});
-			unsigned int type = uintInSubstr_to_uint(swdef.substr(qm[1]+2,1));
-			send_to_log_v2({funcname, "set type to \"", uint_to_string(type), "\"\n"});
-			if(type !=3){
-				send_to_log_v2({funcname, "*multi is TRUE, while type ISN'T MULTIVAR, tf?\n"});
-				return -3;
-			}
-			else send_to_log_v2({funcname, "type IS MULTIVAR, pushing back what's read to vector and continuing to next line: ", *name, ",", uint_to_string(*multi), ",", *multi_var, ",0,0,", uint_to_string(type), ",-1,-1,-1,-1,-1", "\n"});
-			if(t==0){
-				vencsw.push_back({*name, *multi, *multi_var, 0,0,type,-1,-1,-1,-1,-1});
-				vswloc[*name] = vencsw.size() - 1;
-			}
-			else{
-				aencsw.push_back({*name, *multi, *multi_var, 0, 0, type, -1, -1, -1, -1, -1});
-				aswloc[*name] = aencsw.size() - 1;
-			}
-			delete name;
-			delete multi;
-			delete multi_var;
-			continue;
-		} else{
-		unsigned int type = uintInSubstr_to_uint(swdef.substr(commas[2]+1,1));
-		send_to_log_v2({funcname, "set type to ", uint_to_string(type), "\n"});
-		if(type == 3){
-			send_to_log_v2({funcname, "type corresponds to MULTIVAR ... DESPITE LACKING *multi, and thus NOT BEING A MULTIVAR, returning -3\n"});
-			return -3;
+		cur.in_mvar = intInSubstr_to_int(swdef.substr(0,1));
+		send_to_log_v2({funcname, "set cur.in_mvar to ", int_to_string(cur.in_mvar), "\n"});
+		cur.name = swdef.substr(commas[0]+1, commas[1]-commas[0]-1);
+		send_to_log_v2({funcname, "set cur.name to \"", cur.name, "\"\n"});
+		cur.type = intInSubstr_to_int(swdef.substr(commas[1]+1,1));
+		send_to_log_v2({funcname, "set cur.type to ", int_to_string(cur.type), "\n"});
+		switch (cur.type){
+			case -1:{
+					cur.excl = swdef.substr(commas[2]+1,swdef.size()-commas[2]);
+					send_to_log_v2({funcname, "set cur.excl to \"", cur.excl, "\", that's everything for type -1, pushing back\n"});
+					break;
+				}
+			case 0:{
+				       send_to_log_v2({funcname, "type is 0, pushing back\n"});
+					break;
+				}
+			case 1:{
+				       cur.min = intInSubstr_to_int(swdef.substr(commas[2]+1,commas[3]-commas[2]-1));
+				       send_to_log_v2({funcname, "set cur.min to ", int_to_string(cur.min), "\n"});
+				       cur.max = intInSubstr_to_int(swdef.substr(commas[3]+1, swdef.size()-commas[3]));
+				       send_to_log_v2({funcname, "set cur.max to ", int_to_string(cur.max), ", pushing back\n"});
+				       break;
+			       }
+			case 2:{
+				       send_to_log_v2({funcname, "type is 2, pushing back\n"});
+				       break;
+			       }
+			case 3:{
+				       cur.mvar = swdef.substr(commas[2]+2, swdef.size() - commas[2] - 1);
+				       send_to_log_v2({funcname, "set cur.mvar to \"", cur.mvar, "\", pushing back\n"});
+				       break;
+			       }
+			case 4:{ //unfortunate code duplication
+				 cur.min = intInSubstr_to_int(swdef.substr(commas[2]+1,commas[3]-commas[2]-1));
+				 send_to_log_v2({funcname, "set cur.min to ", int_to_string(cur.min), "\n"});
+				 cur.max = intInSubstr_to_int(swdef.substr(commas[3]+1, swdef.size()-commas[3]));
+				 send_to_log_v2({funcname, "set curr max to ", int_to_string(cur.max), ", pushing back\n"});
+				 break;
+			       }
+			default:{
+					send_to_log_v2({funcname, "how did we get to a non-defined type? \n"});
+					return -3;
+				}
 		}
-		else if(type == 2){
-			send_to_log_v2({funcname, "type is STRING, pushing back what's read to vector and continuing to next line: ", *name, ",", uint_to_string(*multi), ",", *multi_var, ",0,0,", uint_to_string(type), ",-1,-1,-1,-1,-1", "\n"});
-			if(t==0){
-				vencsw.push_back({*name, *multi, *multi_var,0,0,type, -1, -1, -1, -1, -1});
-				vswloc[*name] = vencsw.size() - 1;
-			}
-			else{
-				aencsw.push_back({*name, *multi, *multi_var, 0, 0, type, -1, -1, -1, -1 ,-1});
-				aswloc[*name] = aencsw.size() - 1;
-			}
-			delete name;
-			delete multi;
-			delete multi_var;
-			continue;
-		}
-		int *min = new int;
-		*min = intInSubstr_to_int(swdef.substr(commas[3]+1,commas[4]-commas[3]-1));
-		send_to_log_v2({funcname, "set *min to ", int_to_string(*min), "\n"});
-		int *max = new int;
-		*max = intInSubstr_to_int(swdef.substr(commas[4]+1,commas[5]-commas[4]-1));
-		send_to_log_v2({funcname, "set *max to ", int_to_string(*max), "\n"});
-		int *den = new int;
-		*den = intInSubstr_to_int(swdef.substr(commas[5]+1,(swdef.size()-commas[5])));
-		send_to_log_v2({funcname, "set *den to ", int_to_string(*den), ". Type is NOTHING or INT/BOOL/FLOATINGPOINT, no more variables (according to spec) to populate from this line of the definition, pushing back what's read to vector and continuing to next line: ", *name, ",", uint_to_string(*multi), ",", *multi_var, ",0,0,", uint_to_string(type), ",", int_to_string(*min), ",", int_to_string(*max), ",", int_to_string(*den), ",-1,-1\n"});
 		if(t==0){
-			vencsw.push_back({*name, *multi, *multi_var, 0, 0, type, *min, *max, *den, -1, -1});
-			vswloc[*name] = vencsw.size() - 1;
+			vencsw.push_back(cur);
+			vswloc[cur.name] = vencsw.size()-1;
 		}
 		else{
-			aencsw.push_back({*name, *multi, *multi_var, 0, 0, type, *min, *max, *den, -1, -1});
-			aswloc[*name] = aencsw.size() - 1;
+			aencsw.push_back(cur); //FIXME: AUDIO SUPPORT.
+			aswloc[cur.name] = aencsw.size()-1;
 		}
-		//this is done to shut up -Wall -Wextra
-		delete name;
-		delete multi;
-		delete multi_var;
-		delete min;
-		delete max;
-		delete den;
 		}
-	}
 	send_to_log_v2({funcname, "EXITING SUCCESFULLY.\n"});
 	p.close();
 	return 0;

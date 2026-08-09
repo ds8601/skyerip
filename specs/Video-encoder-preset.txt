@@ -1,4 +1,4 @@
-Specification of Video/Audio Encoder preset format for skyerip. Version 0.0.1-draft4. 2026-08-08 22:21 CEST
+Specification of Video/Audio Encoder preset format for skyerip. Version 0.0.1-draft4.1. 2026-08-09 23:03 CEST
 File extension: .srps
 
 The program should place switches in order defined in DEFINITION (for ease of implementation), shall the user-provided switch not reside in the switch database the program shall display a warning instructing the user to either update the definition or check the preset file for typos.
@@ -11,34 +11,36 @@ Version number in format "[major].[minor].[patch][indicator]", ended by \n. [ind
 relative path to encoder definition file. (FIXME: change relative starting point from program launch path to preset file folder)
 Chroma subsampling value (yuv420p,yuv420p10le etc.)
 List of switches (defined in format: "name,type (SEE Encoder-definition-format.txt),values:
+IF INT:
+val
 IF FLOATING POINT:
 val,den
 IF STRING:
 string saved to mvar
+IF: MULTIVAR:
+(nothing)
 ")
 EOF
 
 Example (preset based off of preset on https://ffmpeg.party/guides/x265/ ):
 srps
 0.0.1a
-encdefs/x265.sred
+x265.sred
 yuv420p10le
 crf,4,86,4
-TODO: UPDATE REST OF DEFINITION.
 preset,1,7
-no-open-gop,1,1
+no-open-gop,-1
 keyint,1,500
 gop-lookahead,1,12
 rc-lookahead,1,100
-hme,0
+hme,-1
 hme-search,3
 hme1,1,2
 hme2,1,2
 hme3,1,3
-strong-intra-smoothing,1,0
-rect,1,0
+strong-intra-smoothing,-1
+rect,-1
 aq-mode,1,4
 refine-mv,1,2
 rd-refine,1,1
-$INPUT
 EOF
