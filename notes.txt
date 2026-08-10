@@ -1,13 +1,26 @@
+LOG FILE HANDLER NEEDS ROTATION IMPLEMENATION, AS THE CURRENT ONE IS PISSING ME OFF.
 encoder preset listing needs implementation
-encoder preset setting needs a variable for location of the presets folder, because the default assumption is assinine.
 encoder preset setting code needs to add the file extension onto the specified filename automatically.
 EXAMPLE VIDEO ENCODER DEFINITION FILE NEEDS UPDATING - FILL OUT ALL THE VARIABLES, NOT JUST THE ONES USED BY MY PRESET.
-ENCODER DEFINITION CODE NEEDS UPDATE NEXT THING TOMORROW, IMPLEMENT CHANGES IN DRAFT 2, BY SWITCHING OVER TO sw_v2, ALSO STOP THE SILLY UNNECCESARY VARIABLE DEFINING BULLSHIT AND USE GOTOS.
-ENCODER PRESET CODE NEEDS UPDATE. CURRENTLY IT'S BROKEN.
 
+preset.cpp (handle_multivar(string name)) NEEDS AN ACTUAL IMPLEMENTATION.
+main.cpp proposed command display code needs sw_v2 rewrite
+
+Possible sw_v3 (v2 with slight cleanup utiliting std::unsorted_map to store the name in one place) could be done, hell, that could also be a good idea for implementing audio support.
+Possible cleanup with separating definition and set values, would possibly use slightly more memory, BUT WOULD ENSURE DEFINITIONS WON'T GET OVERWRITTEN.
+sw_v2 ASSUMES THAT THERE'S ONLY ONE FUNCTION THAT CAN EXCLUDE ANOTHER ONE. DAMN.
+MOVE ALL THE COMMON DEFINES INTO ONE EXTERNAL CPP FILE, WHEN DEFINE FAILS TO FUNCTION.
 
 audio encoder preset and handling spec TBD.
+MUXING SUPPORT TBD.
 VS-based rewrite TBD
 HEADER MINIMIZATION TBD.
 HDR10 / HDR10+ handling TBD
 
+Parse_def():
+type -1 works
+type 0 works
+type 1 works
+type 2 REMAINS UNTESTED
+type 3 works
+type 4 works

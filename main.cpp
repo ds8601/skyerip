@@ -9,6 +9,9 @@ vector<sw_v2> vencsw;
 vector<sw_v2> aencsw;
 string vencpath;
 string fn = "main.cpp ";
+string PREFIX=".";
+string ENCDEF_DIR="encdefs";
+string PRESET_DIR="presets";
 int main(){
 	if(open_log() == 1){
 		return 1;
@@ -28,6 +31,7 @@ int main(){
 	cout << "Video Preset: ";
 	string sel_preset_v;
 	cin >> sel_preset_v;
+	sel_preset_v = PREFIX + "/" + PRESET_DIR + "/" + sel_preset_v + ".srps";
 	int vppr = parse_preset(sel_preset_v, 0);
 	if(vppr != 0){send_to_log_v2({fn, "something went seriously wrong while parsing.\n"});
 		return -1;}

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <unordered_map>
+#include <queue>
 #include "log.hpp"
 #include "defines.h"
 #include "helper.h"
@@ -73,7 +74,7 @@ int parse_def(string path, int t){ //NOTE: THIS CODE IS IN THE PROCESS OF BEING 
 	else{
 		send_to_log_v2({funcname, "pushing back supchr[0] \"", chroma.substr(0,chroma_commas[0]), "\"\n"});
 		supchr.push_back(chroma.substr(0,chroma_commas[0]));
-		for(int i=1; i<chroma_commas.size(); i++){
+		for(unsigned long i=1; i<chroma_commas.size(); i++){
 			send_to_log_v2({funcname, "pushing back supchr[", int_to_string(i), "] \"", chroma.substr(chroma_commas[i-1]+1,chroma_commas[i]-chroma_commas[i-1]-1), "\"\n"});
 			supchr.push_back(chroma.substr(chroma_commas[i-1]+1,chroma_commas[i]-chroma_commas[i-1]-1));
 		}
@@ -90,7 +91,7 @@ int parse_def(string path, int t){ //NOTE: THIS CODE IS IN THE PROCESS OF BEING 
 		send_to_log_v2({funcname, "set cur.in_mvar to ", int_to_string(cur.in_mvar), "\n"});
 		cur.name = swdef.substr(commas[0]+1, commas[1]-commas[0]-1);
 		send_to_log_v2({funcname, "set cur.name to \"", cur.name, "\"\n"});
-		cur.type = intInSubstr_to_int(swdef.substr(commas[1]+1,1));
+		cur.type = intInSubstr_to_int(swdef.substr(commas[1]+1,commas[2]-commas[1]-1));
 		send_to_log_v2({funcname, "set cur.type to ", int_to_string(cur.type), "\n"});
 		switch (cur.type){
 			case -1:{
@@ -144,7 +145,13 @@ int parse_def(string path, int t){ //NOTE: THIS CODE IS IN THE PROCESS OF BEING 
 	return 0;
 }
 
-int parse_preset(string fn, int t){
+int handle_multivar(string name){
+	// code will go here tomorrow.
+	return 0;
+}
+
+
+int parse_preset(string fn, int t){ //begin sw_v2 rewrite: 2026-08-10 20:19 CEST. FIXME: NONE OF THIS SHIT SUPPORTS AUDIO.
 	string funcname = "preset.cpp (parse_preset): ";
 	send_to_log_v2({funcname, "opening \"", fn, "\" type ", {char(t+'0')}, "\n"});
 	ps.open(fn, fstream::in);
@@ -179,39 +186,67 @@ int parse_preset(string fn, int t){
 	delete min;
 	delete pat;
 	delete ind;
-	string *path = new string;
-	getline(ps, *path);
-	send_to_log_v2({funcname, "got encoder definition path: ", *path, "\n"});
+	string path;
+	getline(ps, path);
+	path = PREFIX + "/" + ENCDEF_DIR + "/" + path;
+	send_to_log_v2({funcname, "got encoder definition path: ", path, "\n"});
 	int *res = new int;
-	*res = parse_def(*path, t);
+	*res = parse_def(path, t);
 	if(*res != 0){
 		send_to_log_v2({funcname, "parse_def() exited with error code corresponding to unrecognised header.\n"});
 		return -4;
 	}
-	delete path;
 	delete res;
-	string sw; //maybe hash maps would've been a better pick, to be researched after I have a working prototype.
+	string chroma;
+	getline (ps, chroma);
+	bool is_okay = false;
+	for(int i=0; i<supchr.size(); i++){
+		if(supchr[i] == chroma){
+			is_okay = true;
+			break;
+		}
+	}
+	if(is_okay == false){
+		send_to_log_v2({funcname, "chroma subsampling value \"", chroma, "\" IS NOT SUPPORTED ACCORDING TO ENCODER DEFINITION, FIX EITHER.\n"});
+		return -4;
+	}
+	queue<string> multivar;
+	string sw;
+	//for(auto i = vswloc.begin(); i != vswloc.end(); i++){
+	//	send_to_log_v2({funcname, "DEBUG: \"", i->first, "\" EXISTS\n"});
+	//}
 	while(getline(ps, sw)){
 		if(sw == "EOF"){
 			send_to_log_v2({funcname, "saw EOF, ending fun with reading this\n"});
 			break;
 		}
-		else if (sw[0] == '$'){
-			send_to_log_v2({funcname, "$INPUT HANDLING UNIMPLEMENTED\n"});
-			continue;
-		}
 		else{
 			vector <long unsigned int> commas = locate_char(sw, ',');
 			string name = sw.substr(0,commas[0]);
-			unsigned int type = uintInSubstr_to_uint(sw.substr(commas[0]+1,1));
-			switch (type){
-				case 0: {//shut clang++ up
+			if(vswloc.find(name)==vswloc.end()){
+				send_to_log_v2({funcname, "preset declares a switch \"", name, "\" not defined by encoder definition, exiting before std::unsorted_map does UB\n"});
+				return -5;
+			}
+			int type = intInSubstr_to_int(sw.substr(commas[0]+1,1));
+			switch (type){ //rewrite this shit
+				case -1: {
+						 //check IF THE OPPOSITE IS DEFINED.
+						 if(vswloc.find(vencsw[vswloc[name]].excl)!=vswloc.end() && vencsw[vswloc[vencsw[vswloc[name]].excl]].set == true){ //first part is a safeguard against my OR ANYONE ELSE'S STUPIDITY IN FILLING OUT THE DEFINITION FILE.
+							send_to_log_v2({funcname, "OPTION WHICH EXCLUSE USE OF", name, "EXITING BEFORE WE GET AN ERROR\n"});
+							return -5;
+						 }
+						 else {
+							 vencsw[vswloc[name]].set = true;
+							 send_to_log_v2({funcname, "set vencsw[vswloc[name]].set to TRUE\n"});
+						 }
+						 break;
+					 }
+				case 0: {
 					send_to_log_v2({funcname, "enabling ", name, "\n"});
 					vencsw[vswloc[name]].set = true;
 					break;
 					}
-				case 1:
-					{
+				case 1: {
 					int value = intInSubstr_to_int(sw.substr(commas[1]+1,sw.size()-commas[1]));
 					send_to_log_v2({funcname, "detected value as \"", int_to_string(value), "\", setting that in vector.\n"});
 					vencsw[vswloc[name]].set = true;
@@ -222,20 +257,38 @@ int parse_preset(string fn, int t){
 					string value = sw.substr(commas[1]+1, sw.size()-commas[1]);
 					send_to_log_v2({funcname, "detected value as \"", value, "\", setting that in vector as multi_var.\n"});
 					vencsw[vswloc[name]].set = true;
-					vencsw[vswloc[name]].multi_vars = value;
+					vencsw[vswloc[name]].mvar = value;
 					break;
 					}
 				case 3: {
-					//fuckaroo. this will need a special handler to push back populating it til the very end, then and only then gathering the values for it into the multi_var string while unsetting the used variables. that's really the only way. OR it should have a special option to signify it's a multivar variable and thus should be placed in the multivar portion of the appropriate - .... or there needs to be a "belongs to" field in the struct, possibly replacing the unused line number one.
-					send_to_log_v2({funcname, "MULTIVAR handling remains to be implemented\n"});
+					send_to_log_v2({funcname, name, " is MULTIVAR, putting in queue\n"});
+					multivar.push(name);
 					break;
+					}
+				case 4: {
+					int value = intInSubstr_to_int(sw.substr(commas[1]+1, commas[2]-commas[1]-1));
+					send_to_log_v2({funcname, "set value to ", int_to_string(value), "\n"});
+					int den = intInSubstr_to_int(sw.substr(commas[2]+1, sw.size()-commas[1]));
+					send_to_log_v2({funcname, "set denominator to ", int_to_string(den), "\n"});
+					vencsw[vswloc[name]].val = value;
+					vencsw[vswloc[name]].den = den;
+					break;
+					}
+				default:{
+						send_to_log_v2({funcname, "UNEXPECTED TYPE ON ", name, " EXITING.\n"});
+						return -5;
 					}
 			}
 			continue;
 		}
 	}
-	//random cleanup shit introduced while debugging another of the skye-special index off by one every-fucking-where errors.
 	sw="";
+	for(; !multivar.empty(); multivar.pop()){
+		if(handle_multivar(multivar.front()) != 0){
+			send_to_log_v2({funcname, "something went wrong in multivar population handler\n"});
+			return -6;
+		}
+	}
 	vswloc.clear();
 	aswloc.clear();
 	send_to_log_v2({funcname, "successfully got to end of function without any funny biz \n"});

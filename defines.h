@@ -24,10 +24,10 @@ struct sw_v2{
 	int val;
 	int den;
 };
-
-#define PREFIX "."
-#define PRESET_DIR "presets"
-#define ENCDEF_DIR "encdefs"
+//WORKAROUND FOR #define refusing to allow strings.
+extern std::string PREFIX;
+extern std::string PRESET_DIR;
+extern std::string ENCDEF_DIR;
 extern string vencpath;
 extern vector<sw_v2> vencsw;
 extern vector<sw_v2> aencsw;
