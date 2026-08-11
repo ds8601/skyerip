@@ -1,15 +1,16 @@
-LOG FILE HANDLER NEEDS ROTATION IMPLEMENATION, AS THE CURRENT ONE IS PISSING ME OFF.
-encoder preset listing needs implementation
-encoder preset setting code needs to add the file extension onto the specified filename automatically.
 EXAMPLE VIDEO ENCODER DEFINITION FILE NEEDS UPDATING - FILL OUT ALL THE VARIABLES, NOT JUST THE ONES USED BY MY PRESET.
 
-preset.cpp (handle_multivar(string name)) NEEDS AN ACTUAL IMPLEMENTATION.
-main.cpp proposed command display code needs sw_v2 rewrite
+
+vencsw type case handling code could be rewritten into helper functions to declutter both main.cpp and preset.cpp
+main.cpp type case handling code needs a boundary check update. actually, shared helper-function would need that.
 
 Possible sw_v3 (v2 with slight cleanup utiliting std::unsorted_map to store the name in one place) could be done, hell, that could also be a good idea for implementing audio support.
 Possible cleanup with separating definition and set values, would possibly use slightly more memory, BUT WOULD ENSURE DEFINITIONS WON'T GET OVERWRITTEN.
 sw_v2 ASSUMES THAT THERE'S ONLY ONE FUNCTION THAT CAN EXCLUDE ANOTHER ONE. DAMN.
+handle_multivar() assumes the devider is "," and there's only INT OR FLOATING POINT EVER USED THERE. Possibly rewrite in the future with reading character by character, which while slower would allow for far greater flexability in creating presets.
+
 MOVE ALL THE COMMON DEFINES INTO ONE EXTERNAL CPP FILE, WHEN DEFINE FAILS TO FUNCTION.
+
 
 audio encoder preset and handling spec TBD.
 MUXING SUPPORT TBD.

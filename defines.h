@@ -29,6 +29,9 @@ extern std::string PREFIX;
 extern std::string PRESET_DIR;
 extern std::string ENCDEF_DIR;
 extern string vencpath;
+extern string vid_chro;
 extern vector<sw_v2> vencsw;
 extern vector<sw_v2> aencsw;
+extern string vou;
+extern string vin;
 #endif

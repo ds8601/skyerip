@@ -1,8 +1,8 @@
 sred
 0.0.1a
 /usr/bin/x265
--i -
-
+--input - --y4m
+-D 10
 yuv400p,yuv420p,yuv420p10le,yuv422p10le,yuv444p10le
 0,crf,4,0,51
 0,preset,1,1,9

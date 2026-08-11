@@ -115,7 +115,7 @@ int parse_def(string path, int t){ //NOTE: THIS CODE IS IN THE PROCESS OF BEING 
 				       break;
 			       }
 			case 3:{
-				       cur.mvar = swdef.substr(commas[2]+2, swdef.size() - commas[2] - 1);
+				       cur.mvar = swdef.substr(commas[2]+2, swdef.size() - commas[2] - 3);
 				       send_to_log_v2({funcname, "set cur.mvar to \"", cur.mvar, "\", pushing back\n"});
 				       break;
 			       }
@@ -146,7 +146,52 @@ int parse_def(string path, int t){ //NOTE: THIS CODE IS IN THE PROCESS OF BEING 
 }
 
 int handle_multivar(string name){
-	// code will go here tomorrow.
+	string funcname = "preset.cpp (handle_multivar): ";
+	string temp = vencsw[vswloc[name]].mvar;
+	vector<unsigned long int> starts = locate_char(temp, '{');
+	vector<unsigned long int> stops = locate_char(temp, '}');
+	if(starts.size() != stops.size()){
+		send_to_log_v2({funcname, "number of { doesn't match the number of }, this is unexpected and will crash this code. returning 1.\n"});
+		return 1;
+	}
+	//begin cursed shit
+	string out;
+	for(unsigned long int i=0; i<starts.size(); i++){
+		string n1 = temp.substr(starts[i]+1,stops[i]-starts[i]-1);
+		send_to_log_v2({funcname, "found multivar variable name \"", n1, "\"\n"});
+		if(vencsw[vswloc[n1]].in_mvar == false){
+			send_to_log_v2({funcname, "specified variable is not specified as part of multivar, ???\n"});
+			return 2;
+		}
+		switch (vencsw[vswloc[n1]].type){
+			case 1:{
+				       out+=int_to_string(vencsw[vswloc[n1]].val);
+				       break;
+			       }
+			case 4:{
+				       int val = vencsw[vswloc[n1]].val;
+				       int den = vencsw[vswloc[n1]].den;
+				       int temp = val%den;
+				       out+=int_to_string(val/den);
+				       if(temp != 0){
+					       out+=".";
+					       val = temp;
+					       while(val !=0){
+						       val = val * 10;
+						       temp = val%den;
+						       out+=int_to_string(val/den);
+						       val = temp;
+					       }
+				       }
+			       }
+			default:{
+					send_to_log_v2({funcname, "types other than INT(1) and FLOATING POINT(4) are NOT SUPPORTED\n"});
+					return 3;
+				}
+		}
+		if(i<starts.size()-1) out+=",";
+	}
+	vencsw[vswloc[name]].mvar=out;
 	return 0;
 }
 
@@ -200,7 +245,7 @@ int parse_preset(string fn, int t){ //begin sw_v2 rewrite: 2026-08-10 20:19 CEST
 	string chroma;
 	getline (ps, chroma);
 	bool is_okay = false;
-	for(int i=0; i<supchr.size(); i++){
+	for(unsigned long int i=0; i<supchr.size(); i++){
 		if(supchr[i] == chroma){
 			is_okay = true;
 			break;
@@ -209,6 +254,10 @@ int parse_preset(string fn, int t){ //begin sw_v2 rewrite: 2026-08-10 20:19 CEST
 	if(is_okay == false){
 		send_to_log_v2({funcname, "chroma subsampling value \"", chroma, "\" IS NOT SUPPORTED ACCORDING TO ENCODER DEFINITION, FIX EITHER.\n"});
 		return -4;
+	}
+	else{
+		send_to_log_v2({funcname, "setting vid_chro to ", chroma, "\n"});
+		vid_chro = chroma;
 	}
 	queue<string> multivar;
 	string sw;
@@ -261,11 +310,13 @@ int parse_preset(string fn, int t){ //begin sw_v2 rewrite: 2026-08-10 20:19 CEST
 					break;
 					}
 				case 3: {
+					vencsw[vswloc[name]].set = true;
 					send_to_log_v2({funcname, name, " is MULTIVAR, putting in queue\n"});
 					multivar.push(name);
 					break;
 					}
 				case 4: {
+					vencsw[vswloc[name]].set = true;
 					int value = intInSubstr_to_int(sw.substr(commas[1]+1, commas[2]-commas[1]-1));
 					send_to_log_v2({funcname, "set value to ", int_to_string(value), "\n"});
 					int den = intInSubstr_to_int(sw.substr(commas[2]+1, sw.size()-commas[1]));
