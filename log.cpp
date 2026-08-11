@@ -2,11 +2,16 @@
 #include <algorithm>
 #include <vector>
 #include <fstream>
+#include <ctime>
+#include <sys/stat.h>
 #include "log.hpp"
 using namespace std;
 fstream logfile;
+string LOGDIR="/var/tmp/skyerip";
 bool open_log(){
-    string fn = "logfile.log";
+	time_t secs = std::time(NULL);
+    string fn = "skyerip-";
+    fn = LOGDIR+"/"+fn+int_to_string(secs)+".log"; //this is jank, ideally I'd use UTC TIME, but THIS WORKS FOR THE PURPOSE OF NEVER NEEDING TO DELETE THE DAMN LOGS AGAIN.
     logfile.open(fn, fstream::in);
     if(logfile.is_open()){
         cout << "FIXME: LOG ROTATION REQUIRED." << endl;
@@ -14,8 +19,15 @@ bool open_log(){
     }
     logfile.close();
     logfile.open(fn, fstream::out);
-
-    return 0;
+    if(logfile.is_open()) return 0;
+	else{
+		mkdir(LOGDIR.c_str(), 0777);
+		logfile.open(fn, fstream::out);
+		if(logfile.is_open()) return 0;
+		else {
+		cout << "FAILED TO OPEN LOG FILE" << endl;
+		return 1;
+	}}
 }
 
 void send_to_log_v2(vector<string> inputs){
