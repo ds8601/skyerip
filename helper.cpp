@@ -1,22 +1,10 @@
 #include <iostream>
+#include <unordered_map>
 #include "helper.h"
 #include "log.hpp"
 using namespace std;
 string srcf="helper.cpp ";
-
-bool locate_dots(string ver, unsigned int num, unsigned int *dots){
-	unsigned int c=0;
-	for (long unsigned int i=0; i<ver.length(); i++){
-		if(ver[i] == '.'){
-			if(c<num){
-			dots[c]=i;
-			c++;}
-			else return false;
-		}
-	}
-	return true;
-}
-
+//FIXME: unknown crashes when ... spaces are involved? or C99 strings? __DATE__ crashes this
 vector<long unsigned int> locate_char(string in, char find){
 	vector<long unsigned int> out;
 	for(long unsigned int i=0; i<in.size();i++){
@@ -55,18 +43,58 @@ int intInSubstr_to_int(string substr){
 }
 //this could be a generic "string with dots to vector of ints" thing, since a char can be an int.
 int check_definition_version(string version, int usage, uint *maj, uint *min, uint *pat, char *ind){ //FIXME: I really don't want to copy the contents of the string to- nvm
-	unsigned int *dots = new unsigned int[2];
-	if(!locate_dots(version, 2, dots)){
-		if(usage == 1){
-			send_to_log_v2({srcf, "(check_definition_version): more than 2 dots in encoder definition file version. Time for a fsck?\n"});
-			}
-		else send_to_log_v2({srcf, "(check_definition_version): more than 2 dots in encoder preset file version. wrong file?\n"});
-		return -1;}
+	string funcn= "(check_definition_version): ";
+	vector<long unsigned int> dots = locate_char(version, '.');
+	if(dots.size() != 2){
+		switch (usage){
+			case 1:{
+				       send_to_log_v2({srcf, funcn, "more than 2 dots in encoder definition file version.\n"});
+				       break;
+			       }
+			default:{
+					send_to_log_v2({srcf, funcn, "more than 2 dots in encoder preset file version.\n"});
+					break;
+				}
+		}
+		return -1;
+	}
 	*ind = version.back();
 	version.pop_back();
 	*maj = uintInSubstr_to_uint(version.substr(0,dots[0]));
 	*min = uintInSubstr_to_uint(version.substr(dots[0]+1,dots[1]-dots[0]-1));
 	*pat = uintInSubstr_to_uint(version.substr(dots[1]+1,version.size()-1-dots[1]));
-	delete[] dots;
 	return 0;
+}
+
+//unordered_map<string, string> englishMonths{ {"Jan", "01"}, {"Feb", "02"}, {"Mar","03"}, {"Apr","04"}, {"May", "05"}, {"Jun", "06"}, {"Jul","07"}, {"Aug","08"}, {"Sep","09"}, {"Oct","10"}, {"Nov","11"}, {"Dec", "12"} };
+
+//Warning: will break unless locale is set to English, kurwa.
+string date_to_isodate(string date){
+	long unsigned int spaces[2];
+	int c=0;
+	for(long unsigned int i = 0; i<date.size(); i++){
+		if(date[i] == ' '){
+			spaces[c] = i;
+			c++;
+		}
+	}
+	string month = date.substr(0,3);
+	string day = date.substr(spaces[0]+1,spaces[1]-spaces[0]-1);
+	string year = date.substr(spaces[1]+1,date.size()-spaces[1]-1);
+	//I'm too tired to debug wtf is crashing with the unordered map, at this point it genuinely might be easier to look into wether the compiler has some switch to define a variable at compile time.
+	string monthfinal;
+	if(month == "Jan") monthfinal = "01";
+	else if(month == "Feb") monthfinal = "02";
+	else if(month == "Mar") monthfinal = "03";
+	else if(month == "Apr") monthfinal = "04";
+	else if(month == "May") monthfinal = "05";
+	else if(month == "Jun") monthfinal = "06";
+	else if(month == "Jul") monthfinal = "07";
+	else if(month == "Aug") monthfinal = "08";
+	else if(month == "Sep") monthfinal = "09";
+	else if(month == "Oct") monthfinal = "10";
+	else if(month == "Nov") monthfinal = "11";
+	else monthfinal="12";
+	string output = year + "-" + monthfinal + "-" + day;
+	return output;
 }

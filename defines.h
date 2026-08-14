@@ -28,6 +28,7 @@ struct sw_v2{
 extern std::string PREFIX;
 extern std::string PRESET_DIR;
 extern std::string ENCDEF_DIR;
+extern string FUNNY_TEXT;
 extern string vencpath;
 extern string vid_chro;
 extern vector<sw_v2> vencsw;

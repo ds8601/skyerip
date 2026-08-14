@@ -3,20 +3,20 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include "depchk.cpp"
+#include "helper.h"
 #include "log.hpp"
 #include "preset.h"
 #include "defines.h"
+#include <chrono>
 using namespace std;
+vector<vector<sw_v2>> testAudio;
 vector<sw_v2> vencsw;
 vector<sw_v2> aencsw;
 string vencpath;
 string vid_chro;
 string fn = "main.cpp ";
-string PREFIX=".";
-string ENCDEF_DIR="encdefs";
-string PRESET_DIR="presets";
-//fix the following string and compile script to pass along the current date to make sure it displays the build date in UTC time
-string version_string = "Skyerip Version 0.0.1-devel 'Petition' \n(c) 2026 Skye Wierzchowska (ds8601/xpeq7) AND (currently still potential) contributors \nBuild date (FIXME: load this from date): 2026-08-11\n \n"; 
+string builddate = date_to_isodate(__DATE__); //this is so fucking stupid that it genuinely deserves a seperate, dedicated rant to __DATE__ and its amazing definition. 
+string version_string = "Skyerip Version 0.0.1-devel \'Petition\'\n(c) 2026 Skye Wierzchowska (ds8601/xpeq7) AND (currently still potential) contributors\nBuild date: " + builddate +"\n \n"; 
 int main(){
 	struct stat exists_check; // this exists to allow checking if files exist.
 	cout << version_string;
