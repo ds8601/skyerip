@@ -4,7 +4,7 @@
 #include "log.hpp"
 using namespace std;
 string srcf="helper.cpp ";
-//FIXME: unknown crashes when ... spaces are involved? or C99 strings? __DATE__ crashes this
+//FIXME: unknown crashes when ... spaces are involved? or C99 strings? __DATE__ crashes this (my best guess would be a "read out of bounds" bug due to __DATE__ possibly not containing \0)
 vector<long unsigned int> locate_char(string in, char find){
 	vector<long unsigned int> out;
 	for(long unsigned int i=0; i<in.size();i++){
@@ -66,8 +66,10 @@ int check_definition_version(string version, int usage, uint *maj, uint *min, ui
 	return 0;
 }
 
-//unordered_map<string, string> englishMonths{ {"Jan", "01"}, {"Feb", "02"}, {"Mar","03"}, {"Apr","04"}, {"May", "05"}, {"Jun", "06"}, {"Jul","07"}, {"Aug","08"}, {"Sep","09"}, {"Oct","10"}, {"Nov","11"}, {"Dec", "12"} };
 
+
+
+//FALLBACK:
 //Warning: will break unless locale is set to English, kurwa.
 string date_to_isodate(string date){
 	long unsigned int spaces[2];

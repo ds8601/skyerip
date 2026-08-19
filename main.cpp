@@ -15,7 +15,11 @@ vector<sw_v2> aencsw;
 string vencpath;
 string vid_chro;
 string fn = "main.cpp ";
-string builddate = date_to_isodate(__DATE__); //this is so fucking stupid that it genuinely deserves a seperate, dedicated rant to __DATE__ and its amazing definition. 
+#ifndef __BUILDTIME__
+string builddate = date_to_isodate(__DATE__); //this is so fucking stupid that it genuinely deserves a seperate, dedicated rant to __DATE__ and its amazing definition.
+#else
+string builddate = __BUILDTIME__; //Custom macro defined at compile time. see compile.sh
+#endif
 string version_string = "Skyerip Version 0.0.1-devel \'Petition\'\n(c) 2026 Skye Wierzchowska (ds8601/xpeq7) AND (currently still potential) contributors\nBuild date: " + builddate +"\n \n"; 
 int main(){
 	struct stat exists_check; // this exists to allow checking if files exist.
@@ -39,7 +43,6 @@ int main(){
 		cout << "Dependency check failed, exiting with error code." << endl;
 		return 1;
 	}
-	//TODO: Implement preset auto-listing
 	cout << "list of files in \"" << PREFIX << "/" << PRESET_DIR << "/\"" << endl;
 	//shamelessly based off https://stackoverflow.com/a/612176 AND https://www.man7.org/linux/man-pages/man3/readdir.3p.html
 	string pdir = PREFIX + "/" + PRESET_DIR;
@@ -52,7 +55,7 @@ int main(){
 	}
 	closedir(dir);
 	cout << endl;
-ask_vpres:
+ask_vpres: //goto section not to spam any self-recurrencial functions, hopefully.
 	cout << "Video Preset: ";
 	string sel_preset_v;
 	cin >> sel_preset_v;
@@ -63,15 +66,12 @@ ask_vpres:
 		goto ask_vpres;
 	}
 	int vppr = parse_preset(sel_preset_v, 0);
-	if(vppr != 0){send_to_log_v2({fn, "something went seriously wrong while parsing.\n"});
+	if(vppr != 0){ //FIXME: legacy code with assumption on vppr being bool, switch (parse_preset (etc)) would be a better implementation.
+		send_to_log_v2({fn, "something went seriously wrong while parsing.\n"});
+		cout << "Skyerip: Video preset or encoder definition file is structured wrong.\n";
 		return -1;}
 	else send_to_log_v2({fn, "parser exited gracefully \n"});
-	string vidcommand = "ffmpeg -hide_banner -loglevel error -i \"";
-	vidcommand+= filename;
-	vidcommand+= "\" -pix_fmt "+vid_chro+" -strict -1 -f yuv4mpegpipe - | ";
-	vidcommand+= vencpath;
-	vidcommand+= " ";
-	vidcommand+= vin + " ";
+	string vidcommand = "ffmpeg -hide_banner -loglevel error -i \"" + filename + "\" -pix_fmt " + vid_chro + " -strict -1 -f yuv4mpegpipe - | " + vencpath + " " + vin + " ";
 	for(unsigned long int i=0; i<vencsw.size(); i++){
 		if(vencsw[i].set == true && vencsw[i].in_mvar == false){
 			switch (vencsw[i].type){

@@ -4,6 +4,11 @@ EXAMPLE VIDEO ENCODER DEFINITION FILE NEEDS UPDATING - FILL OUT ALL THE VARIABLE
 vencsw type case handling code could be rewritten into helper functions to declutter both main.cpp and preset.cpp
 main.cpp type case handling code needs a boundary check update. actually, shared helper-function would need that.
 
+File existance checking, and directory listing code could be moved to a helper function to clean main.cpp up.
+
+
+
+
 Possible sw_v3 (v2 with slight cleanup utiliting std::unsorted_map to store the name in one place) could be done, hell, that could also be a good idea for implementing audio support.
 Possible cleanup with separating definition and set values, would possibly use slightly more memory, BUT WOULD ENSURE DEFINITIONS WON'T GET OVERWRITTEN.
 sw_v2 ASSUMES THAT THERE'S ONLY ONE FUNCTION THAT CAN EXCLUDE ANOTHER ONE. DAMN.
