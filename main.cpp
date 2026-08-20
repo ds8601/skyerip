@@ -9,18 +9,20 @@
 #include "defines.h"
 #include <chrono>
 using namespace std;
+string fn = "main.cpp ";
+//TODO: move all of this shit into a single shared variables cpp file.
 vector<vector<sw_v2>> testAudio;
 vector<sw_v2> vencsw;
 vector<sw_v2> aencsw;
 string vencpath;
 string vid_chro;
-string fn = "main.cpp ";
 #ifndef __BUILDTIME__
 string builddate = date_to_isodate(__DATE__); //this is so fucking stupid that it genuinely deserves a seperate, dedicated rant to __DATE__ and its amazing definition.
 #else
 string builddate = __BUILDTIME__; //Custom macro defined at compile time. see compile.sh
 #endif
 string version_string = "Skyerip Version 0.0.1-devel \'Petition\'\n(c) 2026 Skye Wierzchowska (ds8601/xpeq7) AND (currently still potential) contributors\nBuild date: " + builddate +"\n \n"; 
+//end variable declarations
 int main(){
 	struct stat exists_check; // this exists to allow checking if files exist.
 	cout << version_string;
@@ -43,6 +45,25 @@ int main(){
 		cout << "Dependency check failed, exiting with error code." << endl;
 		return 1;
 	}
+	//FIXME: replace with proper c++ implementation instead of doing this fucky terminal output readout thing. (TODO: read mediainfoLib SDK docs cover-to-cover to properly implement this shit)
+	FILE *command;
+	string mediainfo_open = "mediainfo \"" + filename + "\"";
+	command = popen(mediainfo_open.c_str(), "r");
+	if(command == NULL){
+		send_to_log_v2({fn, "(temp mediainfo reading code): Why don't we check IF mediainfo IS INSTALLED, FFS?\n"}); //NOTE: this is ultimately pointless IF it's used as a C(++) library, because then we can just assume that on systems that don't have it installed the program will be built with -static on another system which has the required libraries.
+		cout << "Skyerip: TEMP: mediainfo is not installed (wtf)\n";
+		return 1;
+	}
+	char *mediainfo_output = NULL;
+	size_t mioSize = 0; //long unsigned long doesn't allow for -2137.
+	cout << "Mediainfo output (full, to be removed in future itterations)\n";
+	while(getline(&mediainfo_output, &mioSize, command) >= 0){
+		//again temp code
+		cout << mediainfo_output;
+	}
+	pclose(command);
+	free(mediainfo_output);
+	//end temporary mediainfo readout code (nice, not checking shit, but it's a start)
 	cout << "list of files in \"" << PREFIX << "/" << PRESET_DIR << "/\"" << endl;
 	//shamelessly based off https://stackoverflow.com/a/612176 AND https://www.man7.org/linux/man-pages/man3/readdir.3p.html
 	string pdir = PREFIX + "/" + PRESET_DIR;
@@ -72,6 +93,7 @@ ask_vpres: //goto section not to spam any self-recurrencial functions, hopefully
 		return -1;}
 	else send_to_log_v2({fn, "parser exited gracefully \n"});
 	string vidcommand = "ffmpeg -hide_banner -loglevel error -i \"" + filename + "\" -pix_fmt " + vid_chro + " -strict -1 -f yuv4mpegpipe - | " + vencpath + " " + vin + " ";
+
 	for(unsigned long int i=0; i<vencsw.size(); i++){
 		if(vencsw[i].set == true && vencsw[i].in_mvar == false){
 			switch (vencsw[i].type){
@@ -116,6 +138,7 @@ ask_vpres: //goto section not to spam any self-recurrencial functions, hopefully
 		}
 	}
 	//TODO: MOVE TO HELPER FUNCTION
+	//
 ask_output:
 	cout << "Output (RAW ENCODER OUTPUT AT THE MOMENT): ";
 	string out;
@@ -126,7 +149,7 @@ ask_output:
 		cout << "\"" << out << "\" already exists, gimmie a different output name" << endl;
 		goto ask_output;
 	}
-	vidcommand += " " + vou + out;
+	vidcommand += " " + vou + " " + out;
 	cout << "proposed fopen command: " << vidcommand << endl;
 	//TODO: Implement selection manipulation
 	//TODO: repeat with audio codec preset selection
