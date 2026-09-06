@@ -1,21 +1,26 @@
+#define _UNICODE //this is an attempt at coaxing mediainfo into working. TODO: convert all strings into utf-16le (as utf8 is locked away by c++20, whilst I'm trying my hardest to stick to c++17 due to clang still not enabling c++20 by default)
 #include <iostream>
 #include <fstream>
 #include <dirent.h>
-#include <sys/stat.h>
+//#include <sys/stat.h>
+#include "checks.h" //why exactly is this shit even here?
 #include "depchk.cpp"
 #include "helper.h"
 #include "log.hpp"
 #include "preset.h"
 #include "defines.h"
-#include <chrono>
+#include <chrono> //why is this even imported?
+#include <MediaInfo/MediaInfo.h>
+
 using namespace std;
 string fn = "main.cpp ";
 //TODO: move all of this shit into a single shared variables cpp file.
 vector<vector<sw_v2>> testAudio;
-vector<sw_v2> vencsw;
+vector<sw_v2> vencsw; //deprecate this
 vector<sw_v2> aencsw;
 string vencpath;
 string vid_chro;
+//Build string
 #ifndef __BUILDTIME__
 string builddate = date_to_isodate(__DATE__); //this is so fucking stupid that it genuinely deserves a seperate, dedicated rant to __DATE__ and its amazing definition.
 #else
@@ -23,28 +28,29 @@ string builddate = __BUILDTIME__; //Custom macro defined at compile time. see co
 #endif
 string version_string = "Skyerip Version 0.0.1-devel \'Petition\'\n(c) 2026 Skye Wierzchowska (ds8601/xpeq7) AND (currently still potential) contributors\nBuild date: " + builddate +"\n \n"; 
 //end variable declarations
+
 int main(){
-	struct stat exists_check; // this exists to allow checking if files exist.
 	cout << version_string;
 	if(open_log() == 1){
+		cout << "Failed to open logfile, exiting. \n";
 		return 1;
 	}
 	send_to_log_v2({version_string});
+	if(check_Deps()){
+		cout << "Dependency check failed, exiting with error code." << endl;
+		return 1;
+	}
 	ask_fn:
-	//TEMP: quick-input for filename, queuing and sensible menus TBD.
 	cout << "Filename: ";
 	string filename; //TODO: implement unicode.
 	getline(cin, filename);
-	if(stat(filename.c_str(), &exists_check) != 0){
+	if(chkFileExists(filename) != 0){
 		send_to_log_v2({fn, "(main): specified filename \"", filename, "\" doesn't exist, asking again\n"});
 		cout << "Skyerip: File not found." << endl;
 		goto ask_fn;
 	}
 	send_to_log_v2({"filename:", filename, "\n"});
-	if(check_Deps()){
-		cout << "Dependency check failed, exiting with error code." << endl;
-		return 1;
-	}
+/*
 	//FIXME: replace with proper c++ implementation instead of doing this fucky terminal output readout thing. (TODO: read mediainfoLib SDK docs cover-to-cover to properly implement this shit)
 	FILE *command;
 	string mediainfo_open = "mediainfo \"" + filename + "\"";
@@ -64,6 +70,20 @@ int main(){
 	pclose(command);
 	free(mediainfo_output);
 	//end temporary mediainfo readout code (nice, not checking shit, but it's a start)
+	*/
+	//Notice me (heh): new code: attempt at using mediainfo to check the input files contents for video and audio tracks.
+	MediaInfoLib::MediaInfo mi;
+	wstring mi_ver = mi.Option(L"Info_version", L"v26.05;SkyeRipCLI;0.0.1-devel");
+	wcout << mi_ver << endl;
+	send_to_log_v2({mi_ver, L"\n"});
+	mi.Option(L"Internet", L"No"); //There's literally no valid reason for a statically linked binary to even try to reach out to the net to get a newer version.
+	wstring temp_filename(begin(filename), end(filename));
+	mi.Open(temp_filename);
+	mi.Option(L"Inform", L"General;%VideoCount%");
+	wstring bruh = mi.Inform();
+	wcout << bruh << endl;
+
+//this could be moved to a separate "file and folder operations" file to clean this code up.
 	cout << "list of files in \"" << PREFIX << "/" << PRESET_DIR << "/\"" << endl;
 	//shamelessly based off https://stackoverflow.com/a/612176 AND https://www.man7.org/linux/man-pages/man3/readdir.3p.html
 	string pdir = PREFIX + "/" + PRESET_DIR;
@@ -81,7 +101,7 @@ ask_vpres: //goto section not to spam any self-recurrencial functions, hopefully
 	string sel_preset_v;
 	cin >> sel_preset_v;
 	sel_preset_v = PREFIX + "/" + PRESET_DIR + "/" + sel_preset_v + ".srps";
-	if(stat(sel_preset_v.c_str(), &exists_check) != 0){
+	if(chkFileExists(sel_preset_v) != 0){
 		send_to_log_v2({fn, "(main): specified preset \"", sel_preset_v, "\" couldn't be found, (could it be that someone remembered to specify the file extension?)\n"});
 		cout << "Skyerip: File not found. Try without typing the \".srps\" file extension\n";
 		goto ask_vpres;
@@ -144,7 +164,7 @@ ask_output:
 	string out;
 	cin.ignore();
 	getline(cin, out);
-	if(stat(out.c_str(), &exists_check) == 0){
+	if(chkFileExists(out) == 0){
 		send_to_log_v2({fn, "(main): \"", out, "\" already exists. Asking again for an output file\n"});
 		cout << "\"" << out << "\" already exists, gimmie a different output name" << endl;
 		goto ask_output;
