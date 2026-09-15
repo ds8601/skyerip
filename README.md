@@ -19,13 +19,19 @@ I haven't found a decent [StaxRip](https://github.com/staxrip/staxrip) replaceme
 - A GUI or at least a CLI that doesn't suck
 - Dynamic config path loading
 - Any Audio, Subtitle and MUXING SUPPORT
-- Interpretation of input file beyond "exists"
 - Any (optional) deinterlacing support
 - queue
 - HDR10/HDR10+ support (and DV)
-- Any log implementation that won't eat up about half the compiled executable file with just logs.
 - Any real optimizations
 - Input cropping and trimming
 
+## Licensing info
+This program is licensed under the BSD 3-Clause license, (see LICENSE for terms, it's short).
 
-## README.MD updated 2026-08-11 19:56 Central Europe Standard Time.
+Third party libraries:
+This program relies on third party libraries, listed below in form of links to their licenses. Copies of said licenses are also stored in "ThirdParty",
+[MediaInfoLib](https://mediaarea.net/en/MediaInfo/License)
+
+
+
+## README.MD updated 2026-09-15 20:31 Central Europe Standard Time.

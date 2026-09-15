@@ -40,6 +40,11 @@ int main(){
 		cout << "Dependency check failed, exiting with error code." << endl;
 		return 1;
 	}
+	//initialise MediaInfo.
+	MediaInfoLib::MediaInfo mi;
+	wstring mi_ver = mi.Option(L"Info_version", L"v26.05;SkyeRipCLI;0.0.1-devel");
+	send_to_log_v2({mi_ver, L"\n"});
+	mi.Option(L"Internet", L"No"); //There's literally no valid reason for a statically linked binary to even try to reach out to the net to get a newer version.
 	ask_fn:
 	cout << "Filename: ";
 	string filename; //TODO: implement unicode.
@@ -50,38 +55,29 @@ int main(){
 		goto ask_fn;
 	}
 	send_to_log_v2({"filename:", filename, "\n"});
-/*
-	//FIXME: replace with proper c++ implementation instead of doing this fucky terminal output readout thing. (TODO: read mediainfoLib SDK docs cover-to-cover to properly implement this shit)
-	FILE *command;
-	string mediainfo_open = "mediainfo \"" + filename + "\"";
-	command = popen(mediainfo_open.c_str(), "r");
-	if(command == NULL){
-		send_to_log_v2({fn, "(temp mediainfo reading code): Why don't we check IF mediainfo IS INSTALLED, FFS?\n"}); //NOTE: this is ultimately pointless IF it's used as a C(++) library, because then we can just assume that on systems that don't have it installed the program will be built with -static on another system which has the required libraries.
-		cout << "Skyerip: TEMP: mediainfo is not installed (wtf)\n";
-		return 1;
-	}
-	char *mediainfo_output = NULL;
-	size_t mioSize = 0; //long unsigned long doesn't allow for -2137.
-	cout << "Mediainfo output (full, to be removed in future itterations)\n";
-	while(getline(&mediainfo_output, &mioSize, command) >= 0){
-		//again temp code
-		cout << mediainfo_output;
-	}
-	pclose(command);
-	free(mediainfo_output);
-	//end temporary mediainfo readout code (nice, not checking shit, but it's a start)
-	*/
 	//Notice me (heh): new code: attempt at using mediainfo to check the input files contents for video and audio tracks.
-	MediaInfoLib::MediaInfo mi;
-	wstring mi_ver = mi.Option(L"Info_version", L"v26.05;SkyeRipCLI;0.0.1-devel");
-	wcout << mi_ver << endl;
-	send_to_log_v2({mi_ver, L"\n"});
-	mi.Option(L"Internet", L"No"); //There's literally no valid reason for a statically linked binary to even try to reach out to the net to get a newer version.
 	wstring temp_filename(begin(filename), end(filename));
 	mi.Open(temp_filename);
 	mi.Option(L"Inform", L"General;%VideoCount%");
-	wstring bruh = mi.Inform();
-	wcout << bruh << endl;
+	wstring vidCountWStr = mi.Inform();
+	if(vidCountWStr == L""){
+		cout << "Skyerip: no video streams in file, wat?\n" << endl;
+		send_to_log_v2({fn, "(main): no video streams in file, asking for a different one\n"});
+		goto ask_fn;
+	}
+	wcout << L"Video stream count: "<< vidCountWStr << endl;
+	mi.Option(L"Inform", L"General;%AudioCount%");
+	wstring audCountWStr = mi.Inform();
+	if(audCoountWStr == L""){
+		wcout << L"Audio stream count: 0" << endl << L"Skyerip: IF by some offchance your input file has audio, check it with mediainfo, if that shows no audio streams, file a bug there." << endl; 
+		send_to_log_v2({fn, "0 Audio Streams\n"});
+	}
+	else wcout << L"Audio stream count: " << audCountWStr << endl;
+	mi.Option(L"Inform", L"Video;%ID%#");
+	wstring vidIDs = mi.Inform();
+	mi.Option(L"Inform", L"Audio;%ID%#");
+	wstring audIDs = mi.Inform();
+	//TODO: parse all of this shit along with possible channel mappings 
 
 //this could be moved to a separate "file and folder operations" file to clean this code up.
 	cout << "list of files in \"" << PREFIX << "/" << PRESET_DIR << "/\"" << endl;

@@ -14,6 +14,8 @@ Possible cleanup with separating definition and set values, would possibly use s
 sw_v2 ASSUMES THAT THERE'S ONLY ONE FUNCTION THAT CAN EXCLUDE ANOTHER ONE. DAMN.
 handle_multivar() assumes the devider is "," and there's only INT OR FLOATING POINT EVER USED THERE. Possibly rewrite in the future with reading character by character, which while slower would allow for far greater flexability in creating presets.
 
+Switches should be moved to a class instead of a struct. (Possible microoptimisation for later)
+
 MOVE ALL THE COMMON DEFINES INTO ONE EXTERNAL CPP FILE, WHEN DEFINE FAILS TO FUNCTION.
 
 
