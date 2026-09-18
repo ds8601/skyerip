@@ -1,15 +1,14 @@
-#define _UNICODE //this is an attempt at coaxing mediainfo into working. TODO: convert all strings into utf-16le (as utf8 is locked away by c++20, whilst I'm trying my hardest to stick to c++17 due to clang still not enabling c++20 by default)
+//Skyerip: main.cpp
+// (c) 2026, Skye Wierzchowska (ds8601)
+#define _UNICODE //TODO: Figure out how to force this codebase to use utf-8 by default.
 #include <iostream>
-#include <fstream>
 #include <dirent.h>
-//#include <sys/stat.h>
 #include "checks.h" //why exactly is this shit even here?
 #include "depchk.cpp"
 #include "helper.h"
 #include "log.hpp"
 #include "preset.h"
 #include "defines.h"
-#include <chrono> //why is this even imported?
 #include <MediaInfo/MediaInfo.h>
 
 using namespace std;
@@ -22,7 +21,7 @@ string vencpath;
 string vid_chro;
 //Build string
 #ifndef __BUILDTIME__
-string builddate = date_to_isodate(__DATE__); //this is so fucking stupid that it genuinely deserves a seperate, dedicated rant to __DATE__ and its amazing definition.
+string builddate = "__BUILDTIME__ IS GONE";
 #else
 string builddate = __BUILDTIME__; //Custom macro defined at compile time. see compile.sh
 #endif
@@ -35,46 +34,69 @@ int main(){
 		cout << "Failed to open logfile, exiting. \n";
 		return 1;
 	}
-	send_to_log_v2({version_string});
+	send_to_log_v3({version_string});
 	if(check_Deps()){
 		cout << "Dependency check failed, exiting with error code." << endl;
 		return 1;
 	}
+	std::locale::global(std::locale(""));
+	wstring test_string = L"Test WCHAR_T string, here to test send_to_log_v3\n";
+	send_to_log_v3({fn, test_string});
 	//initialise MediaInfo.
 	MediaInfoLib::MediaInfo mi;
 	wstring mi_ver = mi.Option(L"Info_version", L"v26.05;SkyeRipCLI;0.0.1-devel");
-	send_to_log_v2({mi_ver, L"\n"});
+	send_to_log_v3({mi_ver, "\n"});
 	mi.Option(L"Internet", L"No"); //There's literally no valid reason for a statically linked binary to even try to reach out to the net to get a newer version.
-	ask_fn:
+ask_fn:
 	cout << "Filename: ";
-	string filename; //TODO: implement unicode.
+	string filename;
 	getline(cin, filename);
+	if(filename[0]=='\''){
+		send_to_log_v3({fn, "(main): filename starts with '. removing those characters\n"});
+		filename = filename.substr(1,(filename.size()-3));
+		cout << filename << endl;
+	}
 	if(chkFileExists(filename) != 0){
-		send_to_log_v2({fn, "(main): specified filename \"", filename, "\" doesn't exist, asking again\n"});
+		send_to_log_v3({fn, "(main): specified filename \"", filename, "\" doesn't exist, asking again\n"});
 		cout << "Skyerip: File not found." << endl;
 		goto ask_fn;
 	}
-	send_to_log_v2({"filename:", filename, "\n"});
+	send_to_log_v3({"filename: ", filename, "\n"});
 	//Notice me (heh): new code: attempt at using mediainfo to check the input files contents for video and audio tracks.
-	wstring temp_filename(begin(filename), end(filename));
-	mi.Open(temp_filename);
+	mi.Open(wstring(begin(filename), end(filename)));
 	mi.Option(L"Inform", L"General;%VideoCount%");
 	wstring vidCountWStr = mi.Inform();
+	unsigned long vidCnt=2137; //It's highly unlikely that anyone would attempt inputing a transcodable video file with exactly 2137 different video tracks. 
+	wchar_t * endptr; //like hell if I'm using this.
 	if(vidCountWStr == L""){
 		cout << "Skyerip: no video streams in file, wat?\n" << endl;
-		send_to_log_v2({fn, "(main): no video streams in file, asking for a different one\n"});
+		send_to_log_v3({fn, "(main): no video streams in file, asking for a different one\n"});
 		goto ask_fn;
 	}
-	wcout << L"Video stream count: "<< vidCountWStr << endl;
+	else{
+		vidCnt = wcstoul(vidCountWStr.c_str(),&endptr,10);
+		send_to_log_v3({fn, "(main) : Video tracks: ", to_string(vidCnt), "\n"});
+	}
+	cout << "Video stream count: "<< vidCnt << endl;
+	unsigned long audCnt=2137; //this, too, is improbable, unless dealing with, I don't know, even cinema master files wouldn't have this many audio streams.
 	mi.Option(L"Inform", L"General;%AudioCount%");
 	wstring audCountWStr = mi.Inform();
-	if(audCoountWStr == L""){
+	if(audCountWStr == L""){
 		wcout << L"Audio stream count: 0" << endl << L"Skyerip: IF by some offchance your input file has audio, check it with mediainfo, if that shows no audio streams, file a bug there." << endl; 
-		send_to_log_v2({fn, "0 Audio Streams\n"});
+		send_to_log_v3({fn, "0 Audio Streams\n"});
+		audCnt = 0;
 	}
-	else wcout << L"Audio stream count: " << audCountWStr << endl;
+	else{ 
+		wcstoul(audCountWStr.c_str(),&endptr,audCnt);
+		wcout << L"Audio stream count: " << audCountWStr << endl;
+	} //Video;%ID%#%Format%#%Width%x%Height%#%FrameRate%#%FrameRate_Mode%#%BitRate%_
 	mi.Option(L"Inform", L"Video;%ID%#");
 	wstring vidIDs = mi.Inform();
+	unsigned long int temp_int = 0;
+	for (int i=vidCnt; i>0; i--){
+		unsigned long int temp_int2 = vidIDs.find(L'#');
+		//TODO: complete this: grab all video ID's and resolutions/framerates/codecs/bitrates, and ask for selection (down to 1 for now)
+	}
 	mi.Option(L"Inform", L"Audio;%ID%#");
 	wstring audIDs = mi.Inform();
 	//TODO: parse all of this shit along with possible channel mappings 

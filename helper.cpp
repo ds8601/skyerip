@@ -1,5 +1,5 @@
 #include <iostream>
-#include <unordered_map>
+#include <iconv.h>
 #include "helper.h"
 #include "log.hpp"
 using namespace std;
@@ -13,6 +13,24 @@ vector<long unsigned int> locate_char(string in, char find){
 			send_to_log_v2({srcf, "(locate_char): found ", {find}, " at index", uint_to_string(i), "\n"});
 		}
 	}
+	return out;
+}
+
+string wstring_to_string(wstring input){ //based on https://stackoverflow.com/questions/25738497/character-conversion-using-iconv-without-the-unicode-byte-order-mark
+	iconv_t cd = iconv_open("UTF-8", "WCHAR_T");
+	char *outbuf = new char[input.size() * 4];
+	char *inptr = const_cast<char*>(reinterpret_cast<const char *>(input.c_str()));
+	char *outptr = outbuf;
+	size_t in_len = input.size()*4;
+	size_t out_len = in_len;
+	size_t outsize = iconv(cd, &inptr, &in_len, &outptr, &out_len);
+	if(outsize > 0){
+		cout << __FILE__ << " " << __LINE__ << " \"";
+		wcout << input;
+		cout << "\" got irreversibly converted (whatever that means, log file might show some BS" << endl;
+	}
+	iconv_close(cd);
+	string out = outbuf;
 	return out;
 }
 
@@ -64,39 +82,4 @@ int check_definition_version(string version, int usage, uint *maj, uint *min, ui
 	*min = uintInSubstr_to_uint(version.substr(dots[0]+1,dots[1]-dots[0]-1));
 	*pat = uintInSubstr_to_uint(version.substr(dots[1]+1,version.size()-1-dots[1]));
 	return 0;
-}
-
-
-
-
-//FALLBACK:
-//Warning: will break unless locale is set to English, kurwa.
-string date_to_isodate(string date){
-	long unsigned int spaces[2];
-	int c=0;
-	for(long unsigned int i = 0; i<date.size(); i++){
-		if(date[i] == ' '){
-			spaces[c] = i;
-			c++;
-		}
-	}
-	string month = date.substr(0,3);
-	string day = date.substr(spaces[0]+1,spaces[1]-spaces[0]-1);
-	string year = date.substr(spaces[1]+1,date.size()-spaces[1]-1);
-	//I'm too tired to debug wtf is crashing with the unordered map, at this point it genuinely might be easier to look into wether the compiler has some switch to define a variable at compile time.
-	string monthfinal;
-	if(month == "Jan") monthfinal = "01";
-	else if(month == "Feb") monthfinal = "02";
-	else if(month == "Mar") monthfinal = "03";
-	else if(month == "Apr") monthfinal = "04";
-	else if(month == "May") monthfinal = "05";
-	else if(month == "Jun") monthfinal = "06";
-	else if(month == "Jul") monthfinal = "07";
-	else if(month == "Aug") monthfinal = "08";
-	else if(month == "Sep") monthfinal = "09";
-	else if(month == "Oct") monthfinal = "10";
-	else if(month == "Nov") monthfinal = "11";
-	else monthfinal="12";
-	string output = year + "-" + monthfinal + "-" + day;
-	return output;
 }
