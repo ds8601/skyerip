@@ -30,8 +30,9 @@ This program is licensed under the BSD 3-Clause license, (see LICENSE for terms,
 
 Third party libraries:
 This program relies on third party libraries, listed below in form of links to their licenses. Copies of said licenses are also stored in "ThirdParty",
+
 [MediaInfoLib](https://mediaarea.net/en/MediaInfo/License)
 
 
 
-## README.MD updated 2026-09-15 20:31 Central Europe Standard Time.
+## README.MD updated 2026-09-15 20:35 Central Europe Standard Time.
