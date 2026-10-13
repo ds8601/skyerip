@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iconv.h>
+#include <string.h>
 #include "helper.h"
 #include "log.hpp"
 using namespace std;
@@ -21,8 +22,8 @@ string wstring_to_string(wstring input){ //based on https://stackoverflow.com/qu
 	char *outbuf = new char[input.size() * 4];
 	char *inptr = const_cast<char*>(reinterpret_cast<const char *>(input.c_str()));
 	char *outptr = outbuf;
-	size_t in_len = input.size()*4;
-	size_t out_len = in_len;
+	size_t in_len = input.size()*4; 
+	size_t out_len = input.size() * 4;
 	size_t outsize = iconv(cd, &inptr, &in_len, &outptr, &out_len);
 	if(outsize > 0){
 		cout << __FILE__ << " " << __LINE__ << " \"";
@@ -30,7 +31,11 @@ string wstring_to_string(wstring input){ //based on https://stackoverflow.com/qu
 		cout << "\" got irreversibly converted (whatever that means, log file might show some BS" << endl;
 	}
 	iconv_close(cd);
-	string out = outbuf;
+	//FIXME: wasteful, especially on CPU resources.
+	string out = u8"";
+	for(size_t i=0; i<(input.size()*4)-out_len; i++){
+		out = out + outbuf[i];
+	}
 	return out;
 }
 

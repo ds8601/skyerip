@@ -40,7 +40,7 @@ bool check_Deps(){
 			p = false;
 		}
 		//FIXME: char array substring needed for prettier log output.
-		send_to_log_v3({"Detected ", py.substr(0,py.size()-2), " installed, OK"});
+		send_to_log_v3({"Detected ", py.substr(0,py.size()-1), " installed, OK"});
 	}
 	else { //sanity check
 		pclose(console);

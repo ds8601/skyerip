@@ -12,8 +12,9 @@
 #include <MediaInfo/MediaInfo.h>
 
 using namespace std;
-string fn = "main.cpp ";
+string fn = u8"main.cpp ";
 //TODO: move all of this shit into a single shared variables cpp file.
+size_t selVidID;
 vector<vector<sw_v2>> testAudio;
 vector<sw_v2> vencsw; //deprecate this
 vector<sw_v2> aencsw;
@@ -88,30 +89,34 @@ ask_fn:
 		wcstoul(audCountWStr.c_str(),&endptr,audCnt);
 		wcout << L"Audio stream count: " << audCountWStr << endl;
 	} //Video;%ID%#%Format%#%Width%x%Height%#%FrameRate%#%FrameRate_Mode%#%BitRate%_
-	mi.Option(L"Inform", L"Video;%ID%#%Format%#%Width%x%Height%#%FrameRate%#%FrameRate_Mode%#%BitRate%_"); //this will be changed later, probably, lol
+	mi.Option(L"Inform", L"Video;%ID%#%Format%#%Width%x%Height%#%FrameRate%#%FrameRate_Mode%#%BitRate%#"); //this will be changed later, probably, lol. where did the interlacing indicator go?
 	string vidIDs = wstring_to_string(mi.Inform());//utf-8 string
-	send_to_log_v3({fn, "(main): Video detail output: ", vidIDs});
+	send_to_log_v3({fn, u8"(main): Video detail output: ", vidIDs});
 	size_t temp_int = 0;
 	string inputVideoStats;
 	vector<size_t> avaliableIDs;
 	size_t endptr2; //fucking hell, remove the other one once everything is converted to utf-8
+	string video_things[6] = {u8"ID:", u8" CODEC:", u8" RES:", u8" FPS:", u8" FPSMODE:", u8" BITRATE:"};
 	for (int i=vidCnt; i>0; i--){
-		inputVideoStats+=u8"ID:";
-		unsigned long int temp_int2 = vidIDs.find(u8'#');
-		string temp = vidIDs.substr(temp_int, temp_int2-temp_int);
-		unsigned long id = stoul(temp.c_str(),&endptr2,10);
-		avaliableIDs.push_back(id);
-		inputVideoStats+=to_string(id) + u8" CODEC:"; //FIXME: Not doing anything with info below as of now
-		temp_int = temp_int2+1;
-		temp_int2 = vidIDs.find(u8'#', temp_int);
-		inputVideoStats+=vidIDs.substr(temp_int, temp_int2-temp_int) + u8" RES:";
-		temp_int = temp_int2+1;
-		temp_int2 = vidIDs.find(u8'#', temp_int);
-		inputVideoStats+=vidIDs.substr(temp_int, temp_int2-temp_int) + u8" FPS: ";
-		//TODO: complete this: grab all video ID's and resolutions/framerates/codecs/bitrates, and ask for selection (down to 1 for now)
+		for(int j=0; j<6; j++){ //TODO: struct the data into something actually useful, yes, struct.
+			inputVideoStats+=video_things[j];
+			size_t temp_int2 =vidIDs.find(u8'#', temp_int);
+			if(j==0){
+				string temp = vidIDs.substr(temp_int, temp_int2-temp_int);
+				size_t id = stoul(temp.c_str(), &endptr2, 10);
+				avaliableIDs.push_back(id);
+				inputVideoStats+=to_string(id);
+			}
+			else{
+				inputVideoStats+=vidIDs.substr(temp_int, temp_int2-temp_int);
+			}
+			temp_int = temp_int2+1;
+		}
+		inputVideoStats+=u8"\n";
 	}
 	send_to_log_v3({inputVideoStats});
-	cout << inputVideoStats << endl;
+	cout << inputVideoStats << endl << "Select (ONE) Video ID to be encoded: "; //encoding TBD.
+	cin >> selVidID;
 	mi.Option(L"Inform", L"Audio;%ID%#");
 	wstring audIDs = mi.Inform();
 	//TODO: parse all of this shit along with possible channel mappings 
