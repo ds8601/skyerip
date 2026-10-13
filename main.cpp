@@ -25,11 +25,11 @@ string builddate = "__BUILDTIME__ IS GONE";
 #else
 string builddate = __BUILDTIME__; //Custom macro defined at compile time. see compile.sh
 #endif
-string version_string = "Skyerip Version 0.0.1-devel \'Petition\'\n(c) 2026 Skye Wierzchowska (ds8601/xpeq7) AND (currently still potential) contributors\nBuild date: " + builddate +"\n \n"; 
+string version_string = "Skyerip Version 0.0.1-devel \'Petition\'\n(c) 2026 Skye Wierzchowska (ds8601/xpeq7) AND (currently still potential) contributors\nBuild date: " + builddate +"\n"; 
 //end variable declarations
 
 int main(){
-	cout << version_string;
+	cout << version_string << endl;
 	if(open_log() == 1){
 		cout << "Failed to open logfile, exiting. \n";
 		return 1;
@@ -39,29 +39,27 @@ int main(){
 		cout << "Dependency check failed, exiting with error code." << endl;
 		return 1;
 	}
-	std::locale::global(std::locale(""));
-	wstring test_string = L"Test WCHAR_T string, here to test send_to_log_v3\n";
-	send_to_log_v3({fn, test_string});
+	std::locale::global(std::locale("")); //pointless?
 	//initialise MediaInfo.
 	MediaInfoLib::MediaInfo mi;
 	wstring mi_ver = mi.Option(L"Info_version", L"v26.05;SkyeRipCLI;0.0.1-devel");
-	send_to_log_v3({mi_ver, "\n"});
+	send_to_log_v3({mi_ver});
 	mi.Option(L"Internet", L"No"); //There's literally no valid reason for a statically linked binary to even try to reach out to the net to get a newer version.
 ask_fn:
 	cout << "Filename: ";
 	string filename;
 	getline(cin, filename);
 	if(filename[0]=='\''){
-		send_to_log_v3({fn, "(main): filename starts with '. removing those characters\n"});
+		send_to_log_v3({fn, "(main): filename starts with '. removing those characters"});
 		filename = filename.substr(1,(filename.size()-3));
 		cout << filename << endl;
 	}
 	if(chkFileExists(filename) != 0){
-		send_to_log_v3({fn, "(main): specified filename \"", filename, "\" doesn't exist, asking again\n"});
+		send_to_log_v3({fn, "(main): specified filename \"", filename, "\" doesn't exist, asking again"});
 		cout << "Skyerip: File not found." << endl;
 		goto ask_fn;
 	}
-	send_to_log_v3({"filename: ", filename, "\n"});
+	send_to_log_v3({"filename: ", filename});
 	//Notice me (heh): new code: attempt at using mediainfo to check the input files contents for video and audio tracks.
 	mi.Open(wstring(begin(filename), end(filename)));
 	mi.Option(L"Inform", L"General;%VideoCount%");
@@ -70,12 +68,12 @@ ask_fn:
 	wchar_t * endptr; //like hell if I'm using this.
 	if(vidCountWStr == L""){
 		cout << "Skyerip: no video streams in file, wat?\n" << endl;
-		send_to_log_v3({fn, "(main): no video streams in file, asking for a different one\n"});
+		send_to_log_v3({fn, "(main): no video streams in file, asking for a different one"});
 		goto ask_fn;
 	}
 	else{
 		vidCnt = wcstoul(vidCountWStr.c_str(),&endptr,10);
-		send_to_log_v3({fn, "(main) : Video tracks: ", to_string(vidCnt), "\n"});
+		send_to_log_v3({fn, "(main) : Video tracks: ", to_string(vidCnt)});
 	}
 	cout << "Video stream count: "<< vidCnt << endl;
 	unsigned long audCnt=2137; //this, too, is improbable, unless dealing with, I don't know, even cinema master files wouldn't have this many audio streams.
@@ -83,20 +81,37 @@ ask_fn:
 	wstring audCountWStr = mi.Inform();
 	if(audCountWStr == L""){
 		wcout << L"Audio stream count: 0" << endl << L"Skyerip: IF by some offchance your input file has audio, check it with mediainfo, if that shows no audio streams, file a bug there." << endl; 
-		send_to_log_v3({fn, "0 Audio Streams\n"});
+		send_to_log_v3({fn, "0 Audio Streams"});
 		audCnt = 0;
 	}
 	else{ 
 		wcstoul(audCountWStr.c_str(),&endptr,audCnt);
 		wcout << L"Audio stream count: " << audCountWStr << endl;
 	} //Video;%ID%#%Format%#%Width%x%Height%#%FrameRate%#%FrameRate_Mode%#%BitRate%_
-	mi.Option(L"Inform", L"Video;%ID%#");
-	wstring vidIDs = mi.Inform();
-	unsigned long int temp_int = 0;
+	mi.Option(L"Inform", L"Video;%ID%#%Format%#%Width%x%Height%#%FrameRate%#%FrameRate_Mode%#%BitRate%_"); //this will be changed later, probably, lol
+	string vidIDs = wstring_to_string(mi.Inform());//utf-8 string
+	send_to_log_v3({fn, "(main): Video detail output: ", vidIDs});
+	size_t temp_int = 0;
+	string inputVideoStats;
+	vector<size_t> avaliableIDs;
+	size_t endptr2; //fucking hell, remove the other one once everything is converted to utf-8
 	for (int i=vidCnt; i>0; i--){
-		unsigned long int temp_int2 = vidIDs.find(L'#');
+		inputVideoStats+=u8"ID:";
+		unsigned long int temp_int2 = vidIDs.find(u8'#');
+		string temp = vidIDs.substr(temp_int, temp_int2-temp_int);
+		unsigned long id = stoul(temp.c_str(),&endptr2,10);
+		avaliableIDs.push_back(id);
+		inputVideoStats+=to_string(id) + u8" CODEC:"; //FIXME: Not doing anything with info below as of now
+		temp_int = temp_int2+1;
+		temp_int2 = vidIDs.find(u8'#', temp_int);
+		inputVideoStats+=vidIDs.substr(temp_int, temp_int2-temp_int) + u8" RES:";
+		temp_int = temp_int2+1;
+		temp_int2 = vidIDs.find(u8'#', temp_int);
+		inputVideoStats+=vidIDs.substr(temp_int, temp_int2-temp_int) + u8" FPS: ";
 		//TODO: complete this: grab all video ID's and resolutions/framerates/codecs/bitrates, and ask for selection (down to 1 for now)
 	}
+	send_to_log_v3({inputVideoStats});
+	cout << inputVideoStats << endl;
 	mi.Option(L"Inform", L"Audio;%ID%#");
 	wstring audIDs = mi.Inform();
 	//TODO: parse all of this shit along with possible channel mappings 

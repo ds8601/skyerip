@@ -60,14 +60,14 @@ void send_to_log_v3(vector<std::variant<string,wstring>> inputs){
 		logfile << temp;
 		i++;
 	}
-	logfile<<std::flush;
+	logfile<<std::endl;
 }
 
 void close_log(){
 	logfile.close();
 
 }
-
+//this could be replaced by std::to_string
 string uint_to_string(unsigned int input){
 	string output="";
 	if(input == 0) return "0";

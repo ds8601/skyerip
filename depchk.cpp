@@ -12,10 +12,8 @@ bool check_Deps(){
 	//because of POSIX being heavily C, and my aversion to boost libs (past experiences on gentoo taught me to avoid them at all cost), this will be implemented with fgets. In a C++ program.
 	if(fgets(python, 20, console) != NULL){
 		pclose(console);
-		for(int i =0; i< 6;i++){
-			tempstring += python[i];
-		}
-		if(tempstring != "Python"){
+		string py = python;
+		if(py.substr(0,6) != "Python"){
 			cout << "Python 3 is missing" << endl;
 			return 1;
 		}
@@ -42,7 +40,7 @@ bool check_Deps(){
 			p = false;
 		}
 		//FIXME: char array substring needed for prettier log output.
-		send_to_log_v2({"Detected ", python, " installed, OK \n"});
+		send_to_log_v3({"Detected ", py.substr(0,py.size()-2), " installed, OK"});
 	}
 	else { //sanity check
 		pclose(console);
