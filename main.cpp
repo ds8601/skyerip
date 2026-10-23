@@ -9,12 +9,13 @@
 #include "log.hpp"
 #include "preset.h"
 #include "defines.h"
-#include <MediaInfo/MediaInfo.h>
+#include "mi.h"
 
 using namespace std;
 string fn = u8"main.cpp ";
 //TODO: move all of this shit into a single shared variables cpp file.
-size_t selVidID;
+string selVidID;
+string selAudID;
 vector<vector<sw_v2>> testAudio;
 vector<sw_v2> vencsw; //deprecate this
 vector<sw_v2> aencsw;
@@ -41,11 +42,6 @@ int main(){
 		return 1;
 	}
 	std::locale::global(std::locale("")); //pointless?
-	//initialise MediaInfo.
-	MediaInfoLib::MediaInfo mi;
-	wstring mi_ver = mi.Option(L"Info_version", L"v26.05;SkyeRipCLI;0.0.1-devel");
-	send_to_log_v3({mi_ver});
-	mi.Option(L"Internet", L"No"); //There's literally no valid reason for a statically linked binary to even try to reach out to the net to get a newer version.
 ask_fn:
 	cout << "Filename: ";
 	string filename;
@@ -53,7 +49,10 @@ ask_fn:
 	if(filename[0]=='\''){
 		send_to_log_v3({fn, "(main): filename starts with '. removing those characters"});
 		filename = filename.substr(1,(filename.size()-3));
-		cout << filename << endl;
+	}
+	if(filename[filename.size()-1] == ' '){
+		send_to_log_v3({fn, "(main): filename ends with a space, removing it to make the file existance check work"});
+		filename=filename.substr(0,filename.size()-2);
 	}
 	if(chkFileExists(filename) != 0){
 		send_to_log_v3({fn, "(main): specified filename \"", filename, "\" doesn't exist, asking again"});
@@ -62,65 +61,39 @@ ask_fn:
 	}
 	send_to_log_v3({"filename: ", filename});
 	//Notice me (heh): new code: attempt at using mediainfo to check the input files contents for video and audio tracks.
-	mi.Open(wstring(begin(filename), end(filename)));
-	mi.Option(L"Inform", L"General;%VideoCount%");
-	wstring vidCountWStr = mi.Inform();
-	unsigned long vidCnt=2137; //It's highly unlikely that anyone would attempt inputing a transcodable video file with exactly 2137 different video tracks. 
-	wchar_t * endptr; //like hell if I'm using this.
-	if(vidCountWStr == L""){
-		cout << "Skyerip: no video streams in file, wat?\n" << endl;
-		send_to_log_v3({fn, "(main): no video streams in file, asking for a different one"});
-		goto ask_fn;
-	}
-	else{
-		vidCnt = wcstoul(vidCountWStr.c_str(),&endptr,10);
-		send_to_log_v3({fn, "(main) : Video tracks: ", to_string(vidCnt)});
-	}
-	cout << "Video stream count: "<< vidCnt << endl;
-	unsigned long audCnt=2137; //this, too, is improbable, unless dealing with, I don't know, even cinema master files wouldn't have this many audio streams.
-	mi.Option(L"Inform", L"General;%AudioCount%");
-	wstring audCountWStr = mi.Inform();
-	if(audCountWStr == L""){
-		wcout << L"Audio stream count: 0" << endl << L"Skyerip: IF by some offchance your input file has audio, check it with mediainfo, if that shows no audio streams, file a bug there." << endl; 
-		send_to_log_v3({fn, "0 Audio Streams"});
-		audCnt = 0;
-	}
-	else{ 
-		wcstoul(audCountWStr.c_str(),&endptr,audCnt);
-		wcout << L"Audio stream count: " << audCountWStr << endl;
-	} //Video;%ID%#%Format%#%Width%x%Height%#%FrameRate%#%FrameRate_Mode%#%BitRate%_
-	mi.Option(L"Inform", L"Video;%ID%#%Format%#%Width%x%Height%#%FrameRate%#%FrameRate_Mode%#%BitRate%#"); //this will be changed later, probably, lol. where did the interlacing indicator go?
-	string vidIDs = wstring_to_string(mi.Inform());//utf-8 string
-	send_to_log_v3({fn, u8"(main): Video detail output: ", vidIDs});
-	size_t temp_int = 0;
-	string inputVideoStats;
-	vector<size_t> avaliableIDs;
-	size_t endptr2; //fucking hell, remove the other one once everything is converted to utf-8
-	string video_things[6] = {u8"ID:", u8" CODEC:", u8" RES:", u8" FPS:", u8" FPSMODE:", u8" BITRATE:"};
-	for (int i=vidCnt; i>0; i--){
-		for(int j=0; j<6; j++){ //TODO: struct the data into something actually useful, yes, struct.
-			inputVideoStats+=video_things[j];
-			size_t temp_int2 =vidIDs.find(u8'#', temp_int);
-			if(j==0){
-				string temp = vidIDs.substr(temp_int, temp_int2-temp_int);
-				size_t id = stoul(temp.c_str(), &endptr2, 10);
-				avaliableIDs.push_back(id);
-				inputVideoStats+=to_string(id);
-			}
-			else{
-				inputVideoStats+=vidIDs.substr(temp_int, temp_int2-temp_int);
-			}
-			temp_int = temp_int2+1;
+	int mi = parseMediainfo(filename);
+	switch (mi){
+		case -1:
+			cout << "Skyerip: no video streams in file, wat?" << endl;
+			send_to_log_v3({fn, u8"(main): parseMediainfo() returned code corresponding to no video streams in file, asking for a different one"});
+			goto ask_fn;
+			break;
 		}
-		inputVideoStats+=u8"\n";
+	cout << ividstats << endl;
+	switch(vidIDs.size()){
+		case 1:
+			break;
+		case 0:
+			send_to_log_v3({fn, u8"(main): 0 Video IDs in file with VideoCount > 0 ???"});
+			cout << u8"Skyerip: Input file has video tracks, but no video IDs. Something's wrong, I can feel it." << endl;
+			return 1;
+			break;
+		default:
+			cout << "Select Video IDs to be encoded: ";
+			cin >> selVidID; //TODO: parse this.
+			break;
 	}
-	send_to_log_v3({inputVideoStats});
-	cout << inputVideoStats << endl << "Select (ONE) Video ID to be encoded: "; //encoding TBD.
-	cin >> selVidID;
-	mi.Option(L"Inform", L"Audio;%ID%#");
-	wstring audIDs = mi.Inform();
+	cout << endl << iaudstats << endl;
+	switch(audIDs.size()){
+		case 0:
+			send_to_log_v3({fn, u8"(main): no audio in input file"});
+			break;
+		default:
+			cout << u8"Select Audio IDs to be encoded, or type 'n' to encode without audio: ";
+			cin >> selAudID; //TODO: parse this.
+			break;
+	}
 	//TODO: parse all of this shit along with possible channel mappings 
-
 //this could be moved to a separate "file and folder operations" file to clean this code up.
 	cout << "list of files in \"" << PREFIX << "/" << PRESET_DIR << "/\"" << endl;
 	//shamelessly based off https://stackoverflow.com/a/612176 AND https://www.man7.org/linux/man-pages/man3/readdir.3p.html
